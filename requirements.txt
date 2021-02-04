@@ -1,9 +1,3 @@
-cycler
-kiwisolver
 matplotlib
 numpy
 pandas
-pyparsing
-python-dateutil
-pytz
-six
