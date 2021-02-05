@@ -4,6 +4,7 @@ import shutil
 import webbrowser
 
 import pandas as pd
+from numpy import pi
 
 BASE_CONFIG = {
     "COMMAND": None,
@@ -64,15 +65,12 @@ def horizons_requests(root_dir):
 
 def parse_data(root_dir):
     files = os.listdir(root_dir)
-    for filename in files:
-
-        name, ext = os.path.splitext(filename)
-        if ext != '.txt':
+    for body in files:
+        if not os.path.isdir(os.path.join(root_dir, body)):
             continue
-
         # Extract CSV data
-        txt_path = os.path.join(root_dir, filename)
-        csv_path = os.path.join(root_dir, name + '.csv')
+        txt_path = os.path.join(root_dir, body, 'data.txt')
+        csv_path = os.path.join(root_dir, body, 'data.csv')
         with open(txt_path, 'r') as txt_file, open(csv_path, 'w') as csv_file:
 
             for line in txt_file:
@@ -89,8 +87,10 @@ def parse_data(root_dir):
         # Clean data
         df = pd.read_csv(csv_path)[['timestamp', 'ecliptic_longitude', 'ecliptic_latitude']]
 
-        df = df.astype({'ecliptic_longitude': 'float', 'ecliptic_latitude': 'float'})
-        df.timestamp = pd.to_datetime(df.timestamp, format=' %Y-%b-%d %H:%M')
+        df[['ecliptic_longitude', 'ecliptic_latitude']] = df[
+            ['ecliptic_longitude', 'ecliptic_latitude']].astype('float').mul(pi/180.)
+        df.timestamp = pd.to_datetime(df.timestamp.str.strip(), format='%Y-%b-%d %H:%M')
 
         df.to_csv(csv_path, index=False)
+        print('Created {}.'.format(csv_path))
     return
