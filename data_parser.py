@@ -41,5 +41,5 @@ class DataParser:
 
 
 if __name__ == '__main__':
-    data_parser = DataParser('./ecliptic_data/')
+    data_parser = DataParser('./ecliptic_coordinates/')
     data_parser.parse_all()

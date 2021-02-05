@@ -76,5 +76,5 @@ class RequestGenerator:
 
 
 if __name__ == '__main__':
-    request_generator = RequestGenerator('./ecliptic_data/')
+    request_generator = RequestGenerator('./ecliptic_coordinates/')
     request_generator.generate_all_requests()
