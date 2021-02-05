@@ -1,1 +1,4 @@
 .idea/
+__pycache__/
+ecliptic_data/*
+!ecliptic_data/horizons_configuration.json
