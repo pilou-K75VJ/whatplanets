@@ -6,27 +6,13 @@ The angle on the clock corresponds to the **ecliptic longitude** viewed from Ear
 ## Data
 The data comes from [NASA JPL Horizons](https://ssd.jpl.nasa.gov/?horizons),
 which provides custom ephemerides.
+One way of sending requests the the service is by email.
 
-As documented in the link above, one way of sending requests the the service is by email.
-It is done this way here:
-- Send an email to [horizons@ssd.jpl.nasa.gov](mailto:horizons@ssd.jpl.nasa.gov)
-- Subject header "JOB"
-- Body of the email similar to the content of this [example file](batch-file.txt)
+- [`request_generator.py`](request_generator.py):
+    - uses the [`horizons_configuration.json`](ecliptic_data/horizons_configuration.json) file
+    - opens web browser tabs with the email requests ready to be sent.
+    - creates one directory per body
 
-To make your own **ecliptic longitude ephemerides** request, modify the following fields:
+- You have to manually save the responses as `*.txt` files in the directories created
 
-- `START_TIME`
-- `STOP_TIME`
-- `STEP_SIZE` with the corresponding unit
-- `QUANTITIES= '31'` asks for ecliptic longitude
-- `COMMAND` to choose the target. 
-
-    |Target|COMMAND|
-    |---:|---|
-    |Sun|'10'|
-    |Mercury|'199'|
-    |Venus|'299'|
-    |Moon|'301'|
-    |Mars|'499'|
-    |Jupiter|'599'|
-    |Saturn|'699'|
+- [`data_parser.py`](data_parser.py) creates one `*.csv` file for each `*.txt` file, parsing the data received. 
