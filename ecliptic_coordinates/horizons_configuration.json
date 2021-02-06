@@ -1,7 +1,7 @@
 {
   "time_range": {
     "START_TIME": "2020-01-01",
-    "STOP_TIME": "2029-12-31"
+    "STOP_TIME": "2069-12-31"
   },
   "bodies": {
     "sun": {
@@ -23,6 +23,10 @@
     "mars": {
       "COMMAND": "499",
       "STEP_SIZE": "1 d"
+    },
+    "mars2": {
+      "COMMAND": "499",
+      "STEP_SIZE": "5 d"
     },
     "jupiter": {
       "COMMAND": "599",

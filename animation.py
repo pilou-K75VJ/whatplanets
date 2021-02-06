@@ -2,9 +2,9 @@ import json
 import os
 
 import matplotlib.pyplot as plt
-import numpy as np
-from utils import interpolate
 import pandas as pd
+
+from utils import interpolate
 
 if __name__ == '__main__':
 
@@ -16,6 +16,7 @@ if __name__ == '__main__':
 
     ts = pd.date_range(start='2021-01-01', end='2021-12-31', freq='1d')
     for i, time in enumerate(ts):
+        print(time)
         ax = plt.subplot(polar=True, label=str(time.timestamp()))
         ax.set_facecolor('xkcd:very dark blue')
         ax.set_thetagrids([29, 53, 90, 118, 138, 174, 218, 241, 248, 267, 300, 328, 352], labels=[])
