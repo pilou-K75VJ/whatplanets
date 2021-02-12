@@ -4,7 +4,7 @@ Clock of visible planets, where to find them in the sky.
 The angle on the clock corresponds to the **ecliptic longitude** viewed from Earth.
 
 ## Coordinates
-The coordinates comes from [NASA JPL Horizons](https://ssd.jpl.nasa.gov/?horizons),
+The coordinates come from [NASA JPL Horizons](https://ssd.jpl.nasa.gov/?horizons),
 which provides custom ephemerides.
 One way of sending requests to the service is by email.
 
