@@ -4,7 +4,11 @@ import pandas as pd
 from numpy import pi
 
 
-class DataParser:
+class HorizonsParser:
+    """
+    Parses the .txt coordinates tables retrieved from JPL Horizons service.
+    Extracts timestamps and ecliptic coordinates to a .csv
+    """
     def __init__(self, root_dir):
         self.root_dir = root_dir
         self.bodies = [b for b in os.listdir(self.root_dir) if os.path.isdir(os.path.join(self.root_dir, b))]
@@ -40,6 +44,35 @@ class DataParser:
             self.parse_data(body)
 
 
+class YBSParser:
+    """
+    Parses the .dat star database retrieved from http://tdc-www.harvard.edu/catalogs/bsc5.html
+    Extracts coordinates and magnitude to a .csv
+    """
+    def __init__(self, dat_path):
+        self.dat_path = dat_path
+        self.csv_path = dat_path[:-4] + '.csv'
+
+    def parse_data(self):
+        with open(self.dat_path, 'r') as dat_file:
+            data = {key: list() for key in ['RA', 'Dec', 'mag']}
+            for line in dat_file:
+                try:
+                    data['RA'].append(15. * (float(line[75:77])
+                                             + float(line[77:79]) / 60.
+                                             + float(line[79:83]) / 3600.))
+                    data['Dec'].append(float(line[83:86])
+                                       + float(line[86:88]) / 60.
+                                       + float(line[88:90]) / 3600.)
+                    data['mag'].append(float(line[102:107]))
+                except ValueError:
+                    print('Error on line :\n{}'.format(line))
+                    continue
+        df = pd.DataFrame(data).sort_values('mag')
+        df.to_csv(self.csv_path, index=False)
+        return df
+
+
 if __name__ == '__main__':
-    data_parser = DataParser('./ecliptic_coordinates/')
-    data_parser.parse_all()
+    parser = HorizonsParser('./ecliptic_coordinates/')
+    parser.parse_all()
