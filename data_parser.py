@@ -1,4 +1,5 @@
 import os
+from utils import equatorial_to_ecliptic
 
 import pandas as pd
 from numpy import pi
@@ -47,7 +48,7 @@ class HorizonsParser:
 class YBSParser:
     """
     Parses the .dat star database retrieved from http://tdc-www.harvard.edu/catalogs/bsc5.html
-    Extracts coordinates and magnitude to a .csv
+    Extracts coordinates and magnitude, converts to ecliptic coordinates in a .csv
     """
     def __init__(self, dat_path):
         self.dat_path = dat_path
@@ -58,17 +59,19 @@ class YBSParser:
             data = {key: list() for key in ['RA', 'Dec', 'mag']}
             for line in dat_file:
                 try:
-                    data['RA'].append(15. * (float(line[75:77])
-                                             + float(line[77:79]) / 60.
-                                             + float(line[79:83]) / 3600.))
-                    data['Dec'].append(float(line[83:86])
-                                       + float(line[86:88]) / 60.
-                                       + float(line[88:90]) / 3600.)
+                    data['RA'].append((float(line[75:77])
+                                       + float(line[77:79]) / 60.
+                                       + float(line[79:83]) / 3600.)
+                                      * pi / 12.)
+                    data['Dec'].append((1. if line[83] == '+' else -1.)
+                                       * (float(line[84:86]) + float(line[86:88]) / 60. + float(line[88:90]) / 3600.)
+                                       * pi / 180)
                     data['mag'].append(float(line[102:107]))
                 except ValueError:
                     print('Error on line :\n{}'.format(line))
                     continue
-        df = pd.DataFrame(data).sort_values('mag')
+        df = pd.DataFrame(data).sort_values('mag').reset_index(drop=True)
+        df['ecliptic_longitude'], df['ecliptic_latitude'] = equatorial_to_ecliptic(df['RA'], df['Dec'])
         df.to_csv(self.csv_path, index=False)
         return df
 
