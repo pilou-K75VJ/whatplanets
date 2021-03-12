@@ -23,8 +23,6 @@ def equatorial_to_ecliptic(ra, dec):
     tilt = 23.43655 * np.pi / 180.
 
     sin_lat = np.sin(dec) * np.cos(tilt) - np.cos(dec) * np.sin(tilt) * np.sin(ra)
-    # latitude = np.arcsin(sin_lat)
-    # cos_lat = np.cos(latitude)
 
     cos_lon_cos_lat = np.cos(dec) * np.cos(ra)
     sin_lon_cos_lat = np.sin(dec) * np.sin(tilt) + np.cos(dec) * np.cos(tilt) * np.sin(ra)

@@ -1,8 +1,9 @@
 import os
-from utils import equatorial_to_ecliptic
 
 import pandas as pd
 from numpy import pi
+
+from utils import equatorial_to_ecliptic
 
 
 class HorizonsParser:
