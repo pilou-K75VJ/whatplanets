@@ -85,7 +85,7 @@ function updateClock() {
   let now = new Date();
   seconds = (3600 * now.getHours() + 60 * now.getMinutes()
              + now.getSeconds() + now.getMilliseconds() / 1000)
-            * Math.PI / 30;
+            * Math.PI / 1800;
   drawClock(
     seconds * 2,
     seconds * 3,
@@ -97,4 +97,4 @@ function updateClock() {
   );
 }
 
-setInterval(updateClock, 1000 / 30);
+setInterval(updateClock, 1000 / 5);
