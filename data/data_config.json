@@ -1,0 +1,60 @@
+{
+  "time_range": {
+    "START_TIME": "1970-01-01",
+    "STOP_TIME": "2170-12-31"
+  },
+  "bodies": {
+    "sun": {
+      "COMMAND": "10",
+      "STEP_SIZE": "16 d"
+    },
+    "mercury": {
+      "COMMAND": "199",
+      "STEP_SIZE": "2 d"
+    },
+    "venus": {
+      "COMMAND": "299",
+      "STEP_SIZE": "4 d"
+    },
+    "moon": {
+      "COMMAND": "301",
+      "STEP_SIZE": "2 d"
+    },
+    "mars": {
+      "COMMAND": "499",
+      "STEP_SIZE": "8 d"
+    },
+    "jupiter": {
+      "COMMAND": "599",
+      "STEP_SIZE": "16 d"
+    },
+    "saturn": {
+      "COMMAND": "699",
+      "STEP_SIZE": "16 d"
+    }
+  },
+  "base": {
+    "batch": "1",
+    "COMMAND": null,
+    "CENTER": "500@399",
+    "MAKE_EPHEM": "YES",
+    "TABLE_TYPE": "OBSERVER",
+    "START_TIME": null,
+    "STOP_TIME": null,
+    "STEP_SIZE": null,
+    "CAL_FORMAT": "CAL",
+    "TIME_DIGITS": "MINUTES",
+    "ANG_FORMAT": "DEG",
+    "OUT_UNITS": "KM-S",
+    "RANGE_UNITS": "AU",
+    "APPARENT": "AIRLESS",
+    "SUPPRESS_RANGE_RATE": "NO",
+    "SKIP_DAYLT": "NO",
+    "EXTRA_PREC": "NO",
+    "R_T_S_ONLY": "NO",
+    "REF_SYSTEM": "J2000",
+    "CSV_FORMAT": "YES",
+    "OBJ_DATA": "NO",
+    "QUANTITIES": "31"
+  }
+}
