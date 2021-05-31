@@ -1,4 +1,4 @@
 .idea/
 __pycache__/
-ecliptic_coordinates/*
-!ecliptic_coordinates/horizons_configuration.json
+data/*
+!data/data_config.json

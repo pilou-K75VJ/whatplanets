@@ -14,7 +14,8 @@ def interpolate(dataframe, time, columns):
 
 def equatorial_to_ecliptic(ra, dec):
     """
-    Copied from mathworks.com/matlabcentral/fileexchange/23285-conversion-between-equatorial-and-ecliptic-coordinates
+    Copied from
+    http://www.mathworks.com/matlabcentral/fileexchange/23285-conversion-between-equatorial-and-ecliptic-coordinates
     """
 
     if isinstance(ra, float) or isinstance(ra, int):

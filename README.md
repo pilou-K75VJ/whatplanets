@@ -1,18 +1,13 @@
 # zodiac-wanderer
-Clock of visible planets, where to find them in the sky.
+Clock of visible planets, where to find them in the sky : Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn.
 
+We see them around us in a single circle, since they are in the same plane as the Earth (the ecliptic plane).
 The angle on the clock corresponds to the **ecliptic longitude** viewed from Earth.
 
 ## Coordinates
-The coordinates come from [NASA JPL Horizons](https://ssd.jpl.nasa.gov/?horizons),
+The coordinates come from [NASA JPL Horizons](https://ssd.jpl.nasa.gov/horizons_batch.cgi),
 which provides custom ephemerides.
-One way of sending requests to the service is by email.
 
-- [`request_generator.py`](request_generator.py):
-    - uses the config file [`ecliptic_coordinates/horizons_configuration.json`](ecliptic_coordinates/horizons_configuration.json)
-    - opens web browser tabs with the email requests ready to be sent.
-    - creates one directory per body, in [`ecliptic_coordinates`](./ecliptic_coordinates)
-
-- You have to manually save the responses as `*.txt` files in the directories created
-
-- [`data_parser.py`](data_parser.py) creates one `*.csv` file for each `*.txt` data file saved 
+- [`data.py`](data.py):
+    - uses the config file [`data/config.json`](data/data_config.json)
+    - creates a parsed CSV file per body, in [`data`](data)
