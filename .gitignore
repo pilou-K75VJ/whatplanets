@@ -1,4 +1,7 @@
 .idea/
 __pycache__/
+
 data/*
 !data/data_config.json
+
+html/data/
