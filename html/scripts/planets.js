@@ -74,7 +74,7 @@ function drawClock(sun, mer, ven,
   ctx.stroke();
 
   ctx.globalAlpha = 1;
-  ctx.fillStyle = 'black';
+  ctx.fillStyle = 'white';
   ctx.beginPath();
   ctx.arc(0, 0, 10, 0, 2 * Math.PI);
   ctx.fill();
