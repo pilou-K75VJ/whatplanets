@@ -11,74 +11,40 @@ class plColors {
 let ctx = document.getElementById('planets').getContext('2d');
 ctx.translate(125, 125);
 
+function drawHand(color, angle, size = 100,
+                  width = 5, alpha = 0.8) {
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(size * Math.cos(angle), size * Math.sin(angle));
+  ctx.stroke();
+}
+
+function drawDisk(color, radius, alpha = 1) {
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
 function drawClock(sun, mer, ven,
                    lun, mar, jup, sat) {
   ctx.clearRect(-125, -125, 250, 250);
-
-  ctx.globalAlpha = 0.6;
-  ctx.fillStyle = 'black';
-  ctx.beginPath();
-  ctx.arc(0, 0, 110, 0, 2 * Math.PI);
-  ctx.fill();
+  drawDisk('black', 110, alpha=0.6);
 
   ctx.lineCap = 'round';
-  ctx.globalAlpha = 0.8;
+  drawHand(plColors.sun, sun);
+  drawHand(plColors.mer, mer);
+  drawHand(plColors.ven, ven);
+  drawHand(plColors.lun, lun);
+  drawHand(plColors.mar, mar);
+  drawHand(plColors.jup, jup);
+  drawHand(plColors.sat, sat);
 
-  ctx.strokeStyle = plColors.sun;
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(100 * Math.cos(sun), 100 * Math.sin(sun));
-  ctx.stroke();
-
-  ctx.strokeStyle = plColors.mer;
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(100 * Math.cos(mer), 100 * Math.sin(mer));
-  ctx.stroke();
-
-  ctx.strokeStyle = plColors.ven;
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(100 * Math.cos(ven), 100 * Math.sin(ven));
-  ctx.stroke();
-
-  ctx.strokeStyle = plColors.lun;
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(100 * Math.cos(lun), 100 * Math.sin(lun));
-  ctx.stroke();
-
-  ctx.strokeStyle = plColors.mar;
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(100 * Math.cos(mar), 100 * Math.sin(mar));
-  ctx.stroke();
-
-  ctx.strokeStyle = plColors.jup;
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(100 * Math.cos(jup), 100 * Math.sin(jup));
-  ctx.stroke();
-
-  ctx.strokeStyle = plColors.sat;
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(100 * Math.cos(sat), 100 * Math.sin(sat));
-  ctx.stroke();
-
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = 'white';
-  ctx.beginPath();
-  ctx.arc(0, 0, 10, 0, 2 * Math.PI);
-  ctx.fill();
-
+  drawDisk('white', 10);
 }
 
 function updateClock() {
@@ -97,4 +63,4 @@ function updateClock() {
   );
 }
 
-setInterval(updateClock, 1000 / 5);
+setInterval(updateClock, 1000 / 10);
