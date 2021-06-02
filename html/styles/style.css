@@ -4,14 +4,22 @@ html {
 
 body {
   background-color: #BFDFFF;
-  border: 5px solid black;
+  border: solid black;
+  border-width: 0 3px 3px 3px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
   margin: 0 auto;
   padding: 20px;
   width: 800px;
 }
 
 #site-title {
-  border: 5px solid black;
+  border: solid black;
+  border-width: 5px;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
   font-family: "Fredoka One", cursive;
   font-size: 60px;
   margin: 0;
@@ -21,7 +29,6 @@ body {
 #planets {
   display: block;
   margin: 5px auto;
-  border: 1px solid black;
 }
 
 p {
