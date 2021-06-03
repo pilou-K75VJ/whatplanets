@@ -50,23 +50,30 @@ function getDataRange(csvPath, date) {
   let nextIndex = 0;
   for (let i = 1; i < nRows - 1; i++) {
     let [yyyy, mm, dd] = rows[i].slice(0, 10).split('-');
-    if (new Date(Date.UTC(yyyy, mm, dd)) > date) {
+    if (new Date(Date.UTC(parseInt(yyyy),
+                          parseInt(mm) - 1,
+                          parseInt(dd))
+                ) > date) {
       nextIndex = i;
-      test.textContent += mm + ' ';
-      test.textContent += new Date(Date.UTC(yyyy, parseInt(mm), dd));
-;
       break;
     }
   }
   let [date1, lon1, lat1] = rows[nextIndex - 1].split(',');
   let [y1, m1, d1] = date1.split('-');
+  date1 = new Date(Date.UTC(parseInt(y1), parseInt(m1) - 1, parseInt(d1)));
 
   let [date2, lon2, lat2] = rows[nextIndex].split(',');
   let [y2, m2, d2] = date2.split('-');
+  date2 = new Date(Date.UTC(parseInt(y2), parseInt(m2) - 1, parseInt(d2)));
 
-  test.textContent += ' ';
-  return -(parseFloat(lon1));
+  let x = (date - date1) / (date2 - date1);
+//  let x = 0.5;
+//  test.textContent = date;
+
+//  test.textContent += date1 + '___' + date2 + '___' + x + '__________\n';
+  return -(parseFloat(lon1) * (1 - x) + parseFloat(lon2) * x);
 }
+
 
 function drawClock(sun, mer, ven,
                    lun, mar, jup, sat) {
