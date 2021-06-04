@@ -9,9 +9,9 @@ class plColors {
 }
 
 let ctx = document.getElementById('planets').getContext('2d');
-ctx.translate(125, 125);
+ctx.translate(250, 250);
 
-function drawHand(color, angle, size = 100,
+function drawHand(color, angle, size = 200,
                   width = 5, alpha = 0.8) {
   ctx.globalAlpha = alpha;
   ctx.strokeStyle = color;
@@ -77,8 +77,8 @@ function getDataRange(csvPath, date) {
 
 function drawClock(sun, mer, ven,
                    lun, mar, jup, sat) {
-  ctx.clearRect(-125, -125, 250, 250);
-  drawDisk('black', 110, alpha=0.6);
+  ctx.clearRect(-250, -250, 500, 500);
+  drawDisk('black', 220, alpha=0.6);
 
   ctx.lineCap = 'round';
   drawHand(plColors.sun, sun);
@@ -89,7 +89,7 @@ function drawClock(sun, mer, ven,
   drawHand(plColors.jup, jup);
   drawHand(plColors.sat, sat);
 
-  drawDisk('white', 10);
+  drawDisk('white', 20);
 }
 
 let test = document.querySelector('#test');
