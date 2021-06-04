@@ -1,15 +1,102 @@
 const ctx = document.getElementById('planets').getContext('2d');
 ctx.translate(250, 250);  // Translate to center
 
+const test = document.querySelector('#test');
+
 const plColors = {
   sun: '#ffd400',
-  mer: '#7f7f7f',
-  ven: '#afafaf',
-  lun: '#f7f7f7',
-  mar: '#893400',
-  jup: '#89632a',
-  sat: '#56451a',
+  mercury: '#7f7f7f',
+  venus: '#afafaf',
+  moon: '#f7f7f7',
+  mars: '#893400',
+  jupiter: '#89632a',
+  saturn: '#56451a',
 };
+
+class Interpolator {
+  constructor(csvPath) {
+    this.csvPath = csvPath;
+    this.rows = undefined;
+    this.nRows = undefined;
+
+    this.loadCSV();
+
+    this.lon1 = undefined;
+    this.lon2 = undefined;
+    this.date1 = undefined;
+    this.date2 = undefined;
+    this.span = undefined;
+  }
+
+  loadCSV() {
+    test.textContent += '_A\n';
+    // Get raw CSV content
+    let txt = undefined;
+    let rawFile = new XMLHttpRequest();
+    rawFile.open('GET', this.csvPath, false);
+    rawFile.onreadystatechange = function () {
+      if (rawFile.readyState === 4) {
+        if (rawFile.status === 200 || rawFile.status == 0) {
+          txt = rawFile.responseText;
+        }
+      }
+    }
+    rawFile.send(null);
+
+    //Extract rows
+    this.rows = txt.split('\n');
+    this.nRows = this.rows.length;
+  }
+
+  updateDates(date) {
+    test.textContent += '_B\n';
+    let nextIndex = -1;
+    this.rows.some(function(row) {
+      nextIndex += 1;
+      if (nextIndex === 0) { return false; }
+      return Date.UTC(
+        parseInt(row.slice(0, 4)),  // year
+        parseInt(row.slice(5, 7)) - 1,  // month
+        parseInt(row.slice(8, 10))  // day
+      ) > date;  // Exit loop when (row date > required date)
+    });
+
+    let row1 = this.rows[nextIndex - 1];
+    this.lon1 = parseFloat(row1.split(',')[1]);  // Ecliptic longitude
+    this.date1 = Date.UTC(
+      parseInt(row1.slice(0, 4)),  // year
+      parseInt(row1.slice(5, 7)) - 1,  // month
+      parseInt(row1.slice(8, 10))  // day
+    );
+
+    let row2 = this.rows[nextIndex];
+    this.lon2 = parseFloat(row2.split(',')[1]);  // Ecliptic longitude
+    this.date2 = Date.UTC(
+      parseInt(row2.slice(0, 4)),  // year
+      parseInt(row2.slice(5, 7)) - 1,  // month
+      parseInt(row2.slice(8, 10))  // day
+    );
+
+    this.span = this.date2 - this.date1;
+  }
+
+  longitude(date) {
+    test.textContent += '_C\n';
+    if (this.date1 == undefined || date < this.date1 || date > this.date2) {
+      this.updateDates(date);
+    }
+    let x = (date - this.date1) / this.span;
+    return -(this.lon1 * (1 - x) + this.lon2 * x);
+  }
+}
+
+const sun = new Interpolator('data/sun.csv');
+const mercury = new Interpolator('data/mercury.csv');
+const venus = new Interpolator('data/venus.csv');
+const moon = new Interpolator('data/moon.csv');
+const mars = new Interpolator('data/mars.csv');
+const jupiter = new Interpolator('data/jupiter.csv');
+const saturn = new Interpolator('data/saturn.csv');
 
 function drawHand(color, angle) {
   ctx.globalAlpha = 0.8;
@@ -29,87 +116,22 @@ function drawDisk(color, radius, alpha = 1) {
   ctx.fill();
 }
 
-function getDataRange(csvPath, date) {
-  // Get raw CSV content
-  let rawFile = new XMLHttpRequest();
-  let txt = 'null';
-  rawFile.open('GET', csvPath, false);
-  rawFile.onreadystatechange = function () {
-    if (rawFile.readyState === 4) {
-      if (rawFile.status === 200 || rawFile.status == 0) {
-        txt = rawFile.responseText;
-      }
-    }
-  }
-  rawFile.send(null);
+function updateClock() {
+  let now = new Date();
 
-  //Extract 'last' and 'next' rows
-  let rows = txt.split('\n');
-  let nRows = rows.length;
-  let nextIndex = -1;
-  rows.some(function(row) {
-    nextIndex += 1;
-    if (nextIndex === 0) { return false; }
-    return Date.UTC(
-      parseInt(row.slice(0, 4)),  // year
-      parseInt(row.slice(5, 7)) - 1,  // month
-      parseInt(row.slice(8, 10))  // day
-    ) > date;  // Exit loop when (row date > considered date)
-  });
-
-  let row1 = rows[nextIndex - 1];
-  let lon1 = parseFloat(row1.split(',')[1]);  // Ecliptic longitude
-  let date1 = Date.UTC(
-    parseInt(row1.slice(0, 4)),  // year
-    parseInt(row1.slice(5, 7)) - 1,  // month
-    parseInt(row1.slice(8, 10))  // day
-  );
-
-  let row2 = rows[nextIndex];
-  let lon2 = parseFloat(row2.split(',')[1]);  // Ecliptic longitude
-  let date2 = Date.UTC(
-    parseInt(row2.slice(0, 4)),  // year
-    parseInt(row2.slice(5, 7)) - 1,  // month
-    parseInt(row2.slice(8, 10))  // day
-  );
-
-  let x = (date - date1) / (date2 - date1);
-//  test.textContent += date1 + '___' + date2 + '___' + x + '__________\n';
-  return -(lon1 * (1 - x) + lon2 * x);
-}
-
-
-function drawClock(sun, mer, ven,
-                   lun, mar, jup, sat) {
   ctx.clearRect(-250, -250, 500, 500);
   drawDisk('black', 220, alpha=0.6);
 
   ctx.lineCap = 'round';
-  drawHand(plColors.sun, sun);
-  drawHand(plColors.mer, mer);
-  drawHand(plColors.ven, ven);
-  drawHand(plColors.lun, lun);
-  drawHand(plColors.mar, mar);
-  drawHand(plColors.jup, jup);
-  drawHand(plColors.sat, sat);
+  drawHand(plColors.sun, sun.longitude(now));
+  drawHand(plColors.mercury, mercury.longitude(now));
+  drawHand(plColors.venus, venus.longitude(now));
+  drawHand(plColors.moon, moon.longitude(now));
+  drawHand(plColors.mars, mars.longitude(now));
+  drawHand(plColors.jupiter, jupiter.longitude(now));
+  drawHand(plColors.saturn, saturn.longitude(now));
 
   drawDisk('white', 20);
-}
-
-let test = document.querySelector('#test');
-
-function updateClock() {
-  let now = new Date();
-
-  drawClock(
-    getDataRange('data/sun.csv', now),
-    getDataRange('data/mercury.csv', now),
-    getDataRange('data/venus.csv', now),
-    getDataRange('data/moon.csv', now),
-    getDataRange('data/mars.csv', now),
-    getDataRange('data/jupiter.csv', now),
-    getDataRange('data/saturn.csv', now),
-  );
 }
 
 updateClock();
