@@ -35,6 +35,7 @@ class Horizons:
         print('Created {} (size {}).'.format(txt_path, len(response)))
 
     def parse_data(self, body):
+        assert body in self.bodies, "Requested body not in config"
         txt_path = os.path.join(self.data_dir, '{}.txt'.format(body))
         csv_path = os.path.join(self.data_dir, '{}.csv'.format(body))
         with open(txt_path, 'r') as f_txt, open(csv_path, 'w') as f_csv:
@@ -55,7 +56,7 @@ class Horizons:
 
         df.timestamp = pd.to_datetime(df.timestamp.str.strip(), format='%Y-%b-%d %H:%M')
         df[['ecliptic_longitude', 'ecliptic_latitude']] = df[
-            ['ecliptic_longitude', 'ecliptic_latitude']].astype('float').mul(pi / 180.)
+            ['ecliptic_longitude', 'ecliptic_latitude']].astype('float').mul(pi / 180.).round(3)
         df.to_csv(csv_path, index=False)
         print('\tCreated {} (size {}).'.format(csv_path, len(df)))
         os.remove(txt_path)
@@ -143,7 +144,7 @@ class Stars:
 
 
 if __name__ == '__main__':
-    H = Horizons('data', config='data_config.json')
+    H = Horizons('html/data', config='data_config.json')
     H.main()
 
     S = Stars('data')
