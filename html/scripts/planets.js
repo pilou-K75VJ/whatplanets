@@ -1,24 +1,23 @@
-class plColors {
-  static sun = '#ffd400';
-  static mer = '#7f7f7f';
-  static ven = '#afafaf';
-  static lun = '#f7f7f7';
-  static mar = '#893400';
-  static jup = '#89632a';
-  static sat = '#56451a';
-}
+const ctx = document.getElementById('planets').getContext('2d');
+ctx.translate(250, 250);  // Translate to center
 
-let ctx = document.getElementById('planets').getContext('2d');
-ctx.translate(250, 250);
+const plColors = {
+  sun: '#ffd400',
+  mer: '#7f7f7f',
+  ven: '#afafaf',
+  lun: '#f7f7f7',
+  mar: '#893400',
+  jup: '#89632a',
+  sat: '#56451a',
+};
 
-function drawHand(color, angle, size = 200,
-                  width = 5, alpha = 0.8) {
-  ctx.globalAlpha = alpha;
+function drawHand(color, angle) {
+  ctx.globalAlpha = 0.8;
   ctx.strokeStyle = color;
-  ctx.lineWidth = width;
+  ctx.lineWidth = 5;
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.lineTo(size * Math.cos(angle), size * Math.sin(angle));
+  ctx.lineTo(200 * Math.cos(angle), 200 * Math.sin(angle));
   ctx.stroke();
 }
 
@@ -31,7 +30,7 @@ function drawDisk(color, radius, alpha = 1) {
 }
 
 function getDataRange(csvPath, date) {
-  // Get raw CSV
+  // Get raw CSV content
   let rawFile = new XMLHttpRequest();
   let txt = 'null';
   rawFile.open('GET', csvPath, false);
@@ -51,20 +50,32 @@ function getDataRange(csvPath, date) {
   rows.some(function(row) {
     nextIndex += 1;
     if (nextIndex === 0) { return false; }
-    let [y, m, d] = row.slice(0, 10).split('-');
-    return Date.UTC(parseInt(y), parseInt(m) - 1, parseInt(d)) > date;
+    return Date.UTC(
+      parseInt(row.slice(0, 4)),  // year
+      parseInt(row.slice(5, 7)) - 1,  // month
+      parseInt(row.slice(8, 10))  // day
+    ) > date;  // Exit loop when (row date > considered date)
   });
-  let [date1, lon1, lat1] = rows[nextIndex - 1].split(',');
-  let [y1, m1, d1] = date1.split('-');
-  date1 = Date.UTC(parseInt(y1), parseInt(m1) - 1, parseInt(d1));
 
-  let [date2, lon2, lat2] = rows[nextIndex].split(',');
-  let [y2, m2, d2] = date2.split('-');
-  date2 = Date.UTC(parseInt(y2), parseInt(m2) - 1, parseInt(d2));
+  let row1 = rows[nextIndex - 1];
+  let lon1 = parseFloat(row1.split(',')[1]);  // Ecliptic longitude
+  let date1 = Date.UTC(
+    parseInt(row1.slice(0, 4)),  // year
+    parseInt(row1.slice(5, 7)) - 1,  // month
+    parseInt(row1.slice(8, 10))  // day
+  );
+
+  let row2 = rows[nextIndex];
+  let lon2 = parseFloat(row2.split(',')[1]);  // Ecliptic longitude
+  let date2 = Date.UTC(
+    parseInt(row2.slice(0, 4)),  // year
+    parseInt(row2.slice(5, 7)) - 1,  // month
+    parseInt(row2.slice(8, 10))  // day
+  );
 
   let x = (date - date1) / (date2 - date1);
 //  test.textContent += date1 + '___' + date2 + '___' + x + '__________\n';
-  return -(parseFloat(lon1) * (1 - x) + parseFloat(lon2) * x);
+  return -(lon1 * (1 - x) + lon2 * x);
 }
 
 
