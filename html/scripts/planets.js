@@ -16,6 +16,7 @@ const plColors = {
 class Interpolator {
   constructor(csvPath) {
     this.csvPath = csvPath;
+    this.name = csvPath.split('/').pop().split('.').shift();
     this.rows = undefined;
     this.nRows = undefined;
 
@@ -29,7 +30,7 @@ class Interpolator {
   }
 
   loadCSV() {
-    test.textContent += '_A\n';
+    test.textContent += `load_${this.name}______\n`;
     // Get raw CSV content
     let txt = undefined;
     let rawFile = new XMLHttpRequest();
@@ -49,7 +50,7 @@ class Interpolator {
   }
 
   updateDates(date) {
-    test.textContent += '_B\n';
+    test.textContent += `update_${this.name}______\n`;
     let nextIndex = -1;
     this.rows.some(function(row) {
       nextIndex += 1;
@@ -81,7 +82,6 @@ class Interpolator {
   }
 
   longitude(date) {
-    test.textContent += '_C\n';
     if (this.date1 == undefined || date < this.date1 || date > this.date2) {
       this.updateDates(date);
     }
@@ -116,23 +116,26 @@ function drawDisk(color, radius, alpha = 1) {
   ctx.fill();
 }
 
+const multiplier = 100000;
+let start = Date.now();
+
 function updateClock() {
-  let now = new Date();
+  let date = start + multiplier * (Date.now() - start);
 
   ctx.clearRect(-250, -250, 500, 500);
   drawDisk('black', 220, alpha=0.6);
 
   ctx.lineCap = 'round';
-  drawHand(plColors.sun, sun.longitude(now));
-  drawHand(plColors.mercury, mercury.longitude(now));
-  drawHand(plColors.venus, venus.longitude(now));
-  drawHand(plColors.moon, moon.longitude(now));
-  drawHand(plColors.mars, mars.longitude(now));
-  drawHand(plColors.jupiter, jupiter.longitude(now));
-  drawHand(plColors.saturn, saturn.longitude(now));
+  drawHand(plColors.sun, sun.longitude(date));
+  drawHand(plColors.mercury, mercury.longitude(date));
+  drawHand(plColors.venus, venus.longitude(date));
+  drawHand(plColors.moon, moon.longitude(date));
+  drawHand(plColors.mars, mars.longitude(date));
+  drawHand(plColors.jupiter, jupiter.longitude(date));
+  drawHand(plColors.saturn, saturn.longitude(date));
 
   drawDisk('white', 20);
 }
 
 updateClock();
-setInterval(updateClock, 1000 * 3600);
+setInterval(updateClock, 1000 / 30);
