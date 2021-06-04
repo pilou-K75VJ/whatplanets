@@ -118,7 +118,7 @@ class Stars:
 
     def parse_data(self):
         with open(self.dat_path, 'r') as f_dat:
-            data = {key: list() for key in ['RA', 'Dec', 'mag']}
+            data = {key: list() for key in ['RA', 'Dec', 'magnitude']}
             for line in f_dat:
                 try:
                     data['RA'].append((float(line[75:77])
@@ -128,12 +128,14 @@ class Stars:
                     data['Dec'].append((1. if line[83] == '+' else -1.)
                                        * (float(line[84:86]) + float(line[86:88]) / 60. + float(line[88:90]) / 3600.)
                                        * pi / 180)
-                    data['mag'].append(float(line[102:107]))
+                    data['magnitude'].append(float(line[102:107]))
                 except ValueError:
                     print('Error on line :\n{}'.format(line))
                     continue
-        df = pd.DataFrame(data).sort_values('mag').reset_index(drop=True)
+        df = pd.DataFrame(data).sort_values('magnitude').reset_index(drop=True)
         df['ecliptic_longitude'], df['ecliptic_latitude'] = equatorial_to_ecliptic(df['RA'], df['Dec'])
+        df[['ecliptic_longitude', 'ecliptic_latitude']] = df[['ecliptic_longitude', 'ecliptic_latitude']].round(3)
+        df = df.drop(['RA', 'Dec'], axis='columns')
         df.to_csv(self.csv_path, index=False)
         print('\tCreated {} (size {}).'.format(self.csv_path, len(df)))
         os.remove(self.dat_path)
@@ -147,5 +149,5 @@ if __name__ == '__main__':
     H = Horizons('html/data', config='data_config.json')
     H.main()
 
-    S = Stars('data')
+    S = Stars('html/data')
     S.main()
