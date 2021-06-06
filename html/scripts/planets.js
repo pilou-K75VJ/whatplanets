@@ -1,7 +1,7 @@
 const ctx = document.getElementById('planets').getContext('2d');
 ctx.translate(250, 250);  // Translate to center
 
-const test = document.querySelector('#test');
+// const test = document.querySelector('#test');
 
 const plColors = {
   sun: '#ffd400',
@@ -50,7 +50,6 @@ class Interpolator {
   }
 
   updateDates(date) {
-    test.textContent += `update_${this.name}______\n`;
     let nextIndex = -1;
     this.rows.some(function(row) {
       nextIndex += 1;
@@ -77,6 +76,12 @@ class Interpolator {
       parseInt(row2.slice(5, 7)) - 1,  // month
       parseInt(row2.slice(8, 10))  // day
     );
+
+    if (this.lon1 - this.lon2 > Math.PI) {
+      this.lon2 += 2 * Math.PI;
+    } else if (this.lon2 - this.lon1 > Math.PI) {
+      this.lon1 += 2 * Math.PI;
+    }
 
     this.span = this.date2 - this.date1;
   }
@@ -116,7 +121,7 @@ function drawDisk(color, radius, alpha = 1) {
   ctx.fill();
 }
 
-const multiplier = 100000;
+const multiplier = 1;
 let start = Date.now();
 
 function updateClock() {
@@ -138,4 +143,4 @@ function updateClock() {
 }
 
 updateClock();
-setInterval(updateClock, 1000 / 30);
+setInterval(updateClock, 1000);
