@@ -1,8 +1,6 @@
 const ctx = document.getElementById('planets').getContext('2d');
 ctx.translate(250, 250);  // Translate to center
 
-// const test = document.querySelector('#test');
-
 const plColors = {
   sun: '#ffd400',
   mercury: '#7f7f7f',
@@ -30,7 +28,6 @@ class Interpolator {
   }
 
   loadCSV() {
-    test.textContent += `load_${this.name}______\n`;
     // Get raw CSV content
     let txt = undefined;
     let rawFile = new XMLHttpRequest();
