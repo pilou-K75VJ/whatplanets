@@ -13,6 +13,17 @@ body {
   width: 800px;
 }
 
+p {
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+}
+
+img {
+  display: block;
+  margin: 0 auto;
+  width: 100px;
+}
+
 #site-title {
   border: solid black;
   border-width: 5px;
@@ -31,13 +42,14 @@ body {
   margin: 5px auto;
 }
 
-p {
+#date {
+  display: block;
   font-family: "Montserrat", sans-serif;
-  font-size: 14px;
+  font-size: 40px;
+  margin: 5px auto;
 }
 
-img {
+#B-now {
   display: block;
-  margin: 0 auto;
-  width: 100px;
+  margin: 5px auto;
 }
