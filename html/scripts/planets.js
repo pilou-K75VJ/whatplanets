@@ -1,6 +1,18 @@
 const ctx = document.getElementById('planets').getContext('2d');
 ctx.translate(250, 250);  // Translate to center
 
+const txtDate = document.querySelector('#date');
+const txtSpeed = document.querySelector('#speed');
+
+const bd1000 = document.querySelector('#b-d1000');
+const bd10 = document.querySelector('#b-d10');
+const bm10 = document.querySelector('#b-m10');
+const bm1000 = document.querySelector('#b-m1000');
+const b1 = document.querySelector('#b-1');
+const bNow = document.querySelector('#b-now');
+const bBW = document.querySelector('#b-bw');
+const bFW = document.querySelector('#b-fw');
+
 const plColors = {
   sun: '#ffd400',
   mercury: '#7f7f7f',
@@ -118,11 +130,45 @@ function drawDisk(color, radius, alpha = 1) {
   ctx.fill();
 }
 
-const multiplier = 1;
-let start = Date.now();
+let offset = 0;
+let speed = 1;
+let date = undefined;
+
+function multiplier(x) {
+  return function() {
+    speed *= x;
+    offset = date - speed * Date.now();
+    txtSpeed.textContent = `x ${speed}`;
+  };
+}
+
+bd1000.onclick = multiplier(0.001);
+bd10.onclick = multiplier(0.1);
+bm10.onclick = multiplier(10);
+bm1000.onclick = multiplier(1000);
+b1.onclick = function() {
+  speed = 1;
+  offset = date - Date.now();
+};
+bNow.onclick = function() {
+  offset = Date.now() * (1 - speed);
+};
+bBW.onclick = function() {
+  if (speed > 0) {
+    speed *= -1;
+    offset = date - speed * Date.now();
+  }
+};
+bFW.onclick = function() {
+  if (speed < 0) {
+    speed *= -1;
+    offset = date - speed * Date.now();
+  }
+};
 
 function updateClock() {
-  let date = start + multiplier * (Date.now() - start);
+  date = offset + speed * Date.now();
+  txtDate.textContent = new Date(date).toISOString().slice(0, 10);
 
   ctx.clearRect(-250, -250, 500, 500);
   drawDisk('black', 220, alpha=0.6);
@@ -131,7 +177,9 @@ function updateClock() {
   drawHand(plColors.sun, sun.longitude(date));
   drawHand(plColors.mercury, mercury.longitude(date));
   drawHand(plColors.venus, venus.longitude(date));
-  drawHand(plColors.moon, moon.longitude(date));
+  if (speed < 10000000) {
+    drawHand(plColors.moon, moon.longitude(date));
+  }
   drawHand(plColors.mars, mars.longitude(date));
   drawHand(plColors.jupiter, jupiter.longitude(date));
   drawHand(plColors.saturn, saturn.longitude(date));
@@ -140,4 +188,4 @@ function updateClock() {
 }
 
 updateClock();
-setInterval(updateClock, 1000);
+setInterval(updateClock, 1000 / 50);
