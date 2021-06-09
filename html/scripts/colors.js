@@ -1,6 +1,6 @@
 let html = document.querySelector('html');
 let body = document.querySelector('body');
-let mushroom = document.querySelector('#mushroom');
+let earth = document.querySelector('#earth');
 
 class bgColors {
   static lightRed = '#FFBFDF';
@@ -19,7 +19,7 @@ function rgbToHex(rgbString) {
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
-mushroom.onclick = function() {
+earth.onclick = function() {
   switch (rgbToHex(html.style.backgroundColor)) {
     case bgColors.darkBlue:
       html.style.backgroundColor = bgColors.darkGreen;
