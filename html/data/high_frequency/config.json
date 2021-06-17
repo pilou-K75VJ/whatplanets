@@ -1,36 +1,59 @@
 {
-  "time_range": {
-    "START_TIME": "1970-01-01",
-    "STOP_TIME": "2170-12-31"
+  "range_years": 5,
+  "rounding": {
   },
   "bodies": {
     "sun": {
       "COMMAND": "10",
-      "STEP_SIZE": "16 d"
-    },
-    "mercury": {
-      "COMMAND": "199",
-      "STEP_SIZE": "2 d"
-    },
-    "venus": {
-      "COMMAND": "299",
-      "STEP_SIZE": "4 d"
+      "STEP_SIZE": "1 h"
     },
     "moon": {
       "COMMAND": "301",
-      "STEP_SIZE": "2 d"
+      "STEP_SIZE": "1 h"
+    },
+    "mercury": {
+      "COMMAND": "199",
+      "STEP_SIZE": "1 h"
+    },
+    "venus": {
+      "COMMAND": "299",
+      "STEP_SIZE": "1 h"
     },
     "mars": {
       "COMMAND": "499",
-      "STEP_SIZE": "8 d"
+      "STEP_SIZE": "1 h"
     },
     "jupiter": {
       "COMMAND": "599",
-      "STEP_SIZE": "16 d"
+      "STEP_SIZE": "1 h"
     },
     "saturn": {
       "COMMAND": "699",
-      "STEP_SIZE": "16 d"
+      "STEP_SIZE": "1 h"
+    },
+    "uranus": {
+      "COMMAND": "799",
+      "STEP_SIZE": "1 h"
+    },
+    "neptune": {
+      "COMMAND": "899",
+      "STEP_SIZE": "1 h"
+    },
+    "vesta": {
+      "COMMAND": "4%3B",
+      "STEP_SIZE": "1 h"
+    },
+    "iris": {
+      "COMMAND": "7%3B",
+      "STEP_SIZE": "1 h"
+    },
+    "ceres": {
+      "COMMAND": "1%3B",
+      "STEP_SIZE": "1 h"
+    },
+    "pallas": {
+      "COMMAND": "2%3B",
+      "STEP_SIZE": "1 h"
     }
   },
   "base": {

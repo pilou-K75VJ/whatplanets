@@ -14,9 +14,9 @@ const BNow = document.querySelector('#B-now');
 
 const plColors = {
   sun: '#ffd400',
+  moon: '#f7f7f7',
   mercury: '#7f7f7f',
   venus: '#afafaf',
-  moon: '#f7f7f7',
   mars: '#893400',
   jupiter: '#89632a',
   saturn: '#56451a',
@@ -103,13 +103,13 @@ class Interpolator {
   }
 }
 
-const sun = new Interpolator('data/sun.csv');
-const mercury = new Interpolator('data/mercury.csv');
-const venus = new Interpolator('data/venus.csv');
-const moon = new Interpolator('data/moon.csv');
-const mars = new Interpolator('data/mars.csv');
-const jupiter = new Interpolator('data/jupiter.csv');
-const saturn = new Interpolator('data/saturn.csv');
+const sun = new Interpolator('data/small/sun.csv');
+const moon = new Interpolator('data/small/moon.csv');
+const mercury = new Interpolator('data/small/mercury.csv');
+const venus = new Interpolator('data/small/venus.csv');
+const mars = new Interpolator('data/small/mars.csv');
+const jupiter = new Interpolator('data/small/jupiter.csv');
+const saturn = new Interpolator('data/small/saturn.csv');
 
 function drawHand(color, angle) {
   ctx.globalAlpha = 0.8;
@@ -164,11 +164,11 @@ function updateClock() {
 
   ctx.lineCap = 'round';
   drawHand(plColors.sun, sun.longitude(date));
-  drawHand(plColors.mercury, mercury.longitude(date));
-  drawHand(plColors.venus, venus.longitude(date));
   if (Math.abs(speed) < 10000000) {
     drawHand(plColors.moon, moon.longitude(date));
   }
+  drawHand(plColors.mercury, mercury.longitude(date));
+  drawHand(plColors.venus, venus.longitude(date));
   drawHand(plColors.mars, mars.longitude(date));
   drawHand(plColors.jupiter, jupiter.longitude(date));
   drawHand(plColors.saturn, saturn.longitude(date));

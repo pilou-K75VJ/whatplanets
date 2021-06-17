@@ -1,3 +1,5 @@
+import argparse
+import datetime
 import json
 import os
 from math import pi
@@ -9,20 +11,28 @@ from utils import equatorial_to_ecliptic
 
 
 class Horizons:
-    def __init__(self, data_dir, config='data_config.json'):
+    def __init__(self, data_dir, verbose=False):
         self.data_dir = data_dir
-        with open(os.path.join(self.data_dir, config), 'r') as f_config:
+        with open(os.path.join(self.data_dir, 'config.json'), 'r') as f_config:
             self.config = json.load(f_config)
         self.bodies = list(self.config['bodies'].keys())
 
+        self.verbose = verbose
+
     def get_data(self, body):
         assert body in self.bodies, "Requested body not in config"
+
+        today = datetime.date.today()
+        span = datetime.timedelta(days=self.config['range_years'] * 365.2425)
+
         url = "https://ssd.jpl.nasa.gov/horizons_batch.cgi"
         url += '?'
         for k, v in self.config['base'].items():
             if v is None:
-                if 'TIME' in k:
-                    v = self.config['time_range'][k]
+                if k == "START_TIME":
+                    v = (today - span).isoformat()
+                elif k == "STOP_TIME":
+                    v = (today + span).isoformat()
                 else:
                     v = self.config['bodies'][body][k]
 
@@ -38,25 +48,32 @@ class Horizons:
         assert body in self.bodies, "Requested body not in config"
         txt_path = os.path.join(self.data_dir, '{}.txt'.format(body))
         csv_path = os.path.join(self.data_dir, '{}.csv'.format(body))
-        with open(txt_path, 'r') as f_txt, open(csv_path, 'w') as f_csv:
-
+        with open(txt_path, 'r') as f_txt:
             for line in f_txt:
                 if line[:5] == '$$SOE':
                     break
-                pass
+            else:
+                if self.verbose:
+                    print('Error with {}'.format(txtfile))
+                return
 
-            f_csv.write("timestamp,daylight,moon,ecliptic_longitude,ecliptic_latitude,\n")
-            for line in f_txt:
-                if line[:5] == '$$EOE':
-                    break
-                f_csv.write(line)
+            with open(csv_path, 'w') as f_csv:
+                f_csv.write("timestamp,daylight,moon,ecliptic_longitude,ecliptic_latitude,\n")
+                for line in f_txt:
+                    if line[:5] == '$$EOE':
+                        break
+                    f_csv.write(line)
 
         # Clean data
         df = pd.read_csv(csv_path)[['timestamp', 'ecliptic_longitude', 'ecliptic_latitude']]
 
         df.timestamp = pd.to_datetime(df.timestamp.str.strip(), format='%Y-%b-%d %H:%M')
         df[['ecliptic_longitude', 'ecliptic_latitude']] = df[
-            ['ecliptic_longitude', 'ecliptic_latitude']].astype('float').mul(pi / 180.).round(3)
+            ['ecliptic_longitude', 'ecliptic_latitude']].astype('float').mul(pi / 180.)
+
+        for k, v in self.config['rounding'].items():
+          df[k] = df[k].round(v)
+
         df.to_csv(csv_path, index=False)
         print('\tCreated {} (size {}).'.format(csv_path, len(df)))
         os.remove(txt_path)
@@ -97,7 +114,10 @@ class Horizons:
 
     def _dt_max_all(self, err=pi / 180.):
         for body in self.bodies:
-            self._dt_max(body, err=err)
+            try:
+                self._dt_max(body, err=err)
+            except FileNotFoundError:
+                print('Did not find file for {}'.format(body))
 
 
 class Stars:
@@ -105,13 +125,17 @@ class Stars:
     Parses the .dat star database retrieved from http://tdc-www.harvard.edu/catalogs/bsc5.html
     Extracts coordinates and magnitude, converts to ecliptic coordinates in a .csv
     """
-    def __init__(self, data_dir):
+    def __init__(self, data_dir, verbose=False):
         self.data_dir = data_dir
+        with open(os.path.join(self.data_dir, 'config.json'), 'r') as f_config:
+            self.config = json.load(f_config)
         self.dat_path = os.path.join(self.data_dir, 'bsc5.dat')
         self.csv_path = os.path.join(self.data_dir, 'bsc5.csv')
 
+        self.verbose = verbose
+
     def get_data(self):
-        os.system("wget http://tdc-www.harvard.edu/catalogs/bsc5.dat.gz")
+        os.system("wget {}".format(self.config['url']))
         os.system("gzip -d bsc5.dat.gz")
         os.system("rm -f bsc5.dat.gz")
         os.system("mv bsc5.dat {}".format(self.data_dir))
@@ -130,11 +154,14 @@ class Stars:
                                        * pi / 180)
                     data['magnitude'].append(float(line[102:107]))
                 except ValueError:
-                    print('Error on line :\n{}'.format(line))
+                    if self.verbose:
+                        print('Error on line :\n{}'.format(line))
                     continue
         df = pd.DataFrame(data).sort_values('magnitude').reset_index(drop=True)
         df['ecliptic_longitude'], df['ecliptic_latitude'] = equatorial_to_ecliptic(df['RA'], df['Dec'])
-        df[['ecliptic_longitude', 'ecliptic_latitude']] = df[['ecliptic_longitude', 'ecliptic_latitude']].round(3)
+        for k, v in self.config['rounding'].items():
+          df[k] = df[k].round(v)
+
         df = df.drop(['RA', 'Dec'], axis='columns')
         df.to_csv(self.csv_path, index=False)
         print('\tCreated {} (size {}).'.format(self.csv_path, len(df)))
@@ -146,8 +173,22 @@ class Stars:
 
 
 if __name__ == '__main__':
-    H = Horizons('html/data', config='data_config.json')
-    H.main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--planets', type=str, default=None,
+                        help='Directory to put planets data in. Must contain config.json')
+    parser.add_argument('--stars', type=str, default=None,
+                        help='Directory to put stars data in. Must contain config.json')
+    parser.add_argument('--verbose', action='store_true')
+    args = parser.parse_args()
 
-    S = Stars('html/data')
-    S.main()
+    if args.planets is not None:
+        H = Horizons(args.planets, verbose=args.verbose)
+        H.main()
+        # H._dt_max_all()
+
+    if args.stars is not None:
+        S = Stars(args.stars, verbose=args.verbose)
+        S.main()
+
+    if args.planets is None and args.stars is None:
+        parser.print_help()

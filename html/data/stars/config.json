@@ -1,0 +1,8 @@
+{
+  "url": "http://tdc-www.harvard.edu/catalogs/bsc5.dat.gz",
+  "rounding": {
+    "magnitude": 3,
+    "ecliptic_longitude": 3,
+    "ecliptic_latitude": 3
+  }
+}
