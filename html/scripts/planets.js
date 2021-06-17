@@ -2,6 +2,7 @@ const ctx = document.getElementById('planets').getContext('2d');
 ctx.translate(250, 250);  // Translate to center
 
 const txtDate = document.querySelector('#date');
+// const test = document.querySelector('#test');
 
 const b7 = document.querySelector('#b7');
 const b6 = document.querySelector('#b6');
@@ -22,23 +23,15 @@ const plColors = {
   saturn: '#56451a',
 };
 
-class Interpolator {
-  constructor(csvPath) {
-    this.csvPath = csvPath;
-    this.name = csvPath.split('/').pop().split('.').shift();
-    this.rows = undefined;
-    this.nRows = undefined;
+class Database {
+  constructor(name, size) {
+    this.name = name;
+    this.size = size;
+    this.csvPath = `data/${size}/${name}.csv`;
 
-    this.loadCSV();
+    this.dateMin = undefined;  // TODO
+    this.dateMax = undefined;
 
-    this.lon1 = undefined;
-    this.lon2 = undefined;
-    this.date1 = undefined;
-    this.date2 = undefined;
-    this.span = undefined;
-  }
-
-  loadCSV() {
     // Get raw CSV content
     let txt = undefined;
     let rawFile = new XMLHttpRequest();
@@ -54,12 +47,26 @@ class Interpolator {
 
     //Extract rows
     this.rows = txt.split('\n');
-    this.nRows = this.rows.length;
+  }
+}
+
+class Interpolator {
+  constructor(name) {
+    this.name = name;
+
+    this.smallDatabase = new Database(name, 'small');
+
+    this.lon1 = undefined;
+    this.lon2 = undefined;
+    this.date1 = undefined;
+    this.date2 = undefined;
+    this.span = undefined;
   }
 
   updateDates(date) {
     let nextIndex = -1;
-    this.rows.some(function(row) {
+
+    this.smallDatabase.rows.some(function(row) {
       nextIndex += 1;
       if (nextIndex === 0) { return false; }
       return Date.UTC(
@@ -69,7 +76,7 @@ class Interpolator {
       ) > date;  // Exit loop when (row date > required date)
     });
 
-    let row1 = this.rows[nextIndex - 1];
+    let row1 = this.smallDatabase.rows[nextIndex - 1];
     this.lon1 = parseFloat(row1.split(',')[1]);  // Ecliptic longitude
     this.date1 = Date.UTC(
       parseInt(row1.slice(0, 4)),  // year
@@ -77,7 +84,7 @@ class Interpolator {
       parseInt(row1.slice(8, 10))  // day
     );
 
-    let row2 = this.rows[nextIndex];
+    let row2 = this.smallDatabase.rows[nextIndex];
     this.lon2 = parseFloat(row2.split(',')[1]);  // Ecliptic longitude
     this.date2 = Date.UTC(
       parseInt(row2.slice(0, 4)),  // year
@@ -103,13 +110,13 @@ class Interpolator {
   }
 }
 
-const sun = new Interpolator('data/small/sun.csv');
-const moon = new Interpolator('data/small/moon.csv');
-const mercury = new Interpolator('data/small/mercury.csv');
-const venus = new Interpolator('data/small/venus.csv');
-const mars = new Interpolator('data/small/mars.csv');
-const jupiter = new Interpolator('data/small/jupiter.csv');
-const saturn = new Interpolator('data/small/saturn.csv');
+const sun = new Interpolator('sun');
+const moon = new Interpolator('moon');
+const mercury = new Interpolator('mercury');
+const venus = new Interpolator('venus');
+const mars = new Interpolator('mars');
+const jupiter = new Interpolator('jupiter');
+const saturn = new Interpolator('saturn');
 
 function drawHand(color, angle) {
   ctx.globalAlpha = 0.8;
