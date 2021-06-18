@@ -24,10 +24,10 @@ const plColors = {
 };
 
 class Database {
-  constructor(name, size) {
+  constructor(name, body) {
     this.name = name;
-    this.size = size;
-    this.csvPath = `data/${size}/${name}.csv`;
+    this.body = body;
+    this.csvPath = `data/${name}/${body}.csv`;
 
     this.dateMin = undefined;  // TODO
     this.dateMax = undefined;
@@ -51,10 +51,9 @@ class Database {
 }
 
 class Interpolator {
-  constructor(name) {
-    this.name = name;
-
-    this.smallDatabase = new Database(name, 'small');
+  constructor(body) {
+    this.body = body;
+    this.database = new Database('lite', body);
 
     this.lon1 = undefined;
     this.lon2 = undefined;
@@ -66,7 +65,7 @@ class Interpolator {
   updateDates(date) {
     let nextIndex = -1;
 
-    this.smallDatabase.rows.some(function(row) {
+    this.database.rows.some(function(row) {
       nextIndex += 1;
       if (nextIndex === 0) { return false; }
       return Date.UTC(
@@ -76,7 +75,7 @@ class Interpolator {
       ) > date;  // Exit loop when (row date > required date)
     });
 
-    let row1 = this.smallDatabase.rows[nextIndex - 1];
+    let row1 = this.database.rows[nextIndex - 1];
     this.lon1 = parseFloat(row1.split(',')[1]);  // Ecliptic longitude
     this.date1 = Date.UTC(
       parseInt(row1.slice(0, 4)),  // year
@@ -84,7 +83,7 @@ class Interpolator {
       parseInt(row1.slice(8, 10))  // day
     );
 
-    let row2 = this.smallDatabase.rows[nextIndex];
+    let row2 = this.database.rows[nextIndex];
     this.lon2 = parseFloat(row2.split(',')[1]);  // Ecliptic longitude
     this.date2 = Date.UTC(
       parseInt(row2.slice(0, 4)),  // year
@@ -154,6 +153,7 @@ B0.onclick = setSpeed(1);
 B5.onclick = setSpeed(100000);
 B6.onclick = setSpeed(1000000);
 B7.onclick = setSpeed(10000000);
+
 txtDate.oninput = function() {
   speed = 1;
   offset = txtDate.valueAsNumber - speed * Date.now();
@@ -184,4 +184,4 @@ function updateClock() {
 }
 
 updateClock();
-setInterval(updateClock, 1000 / 50);
+setInterval(updateClock, 1000 / 30);

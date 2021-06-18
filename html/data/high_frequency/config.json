@@ -1,7 +1,9 @@
 {
-  "range_years": 5,
-  "rounding": {
+  "time_cover": {
+    "range": 10,
+    "cover": "today"
   },
+  "rounding": {},
   "bodies": {
     "sun": {
       "COMMAND": "10",

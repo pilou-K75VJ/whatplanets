@@ -5,6 +5,7 @@ import os
 from math import pi
 
 import pandas as pd
+import numpy as np
 import requests
 
 from utils import equatorial_to_ecliptic
@@ -12,40 +13,70 @@ from utils import equatorial_to_ecliptic
 
 class Horizons:
     def __init__(self, data_dir, verbose=False):
+        self.verbose = verbose
+
         self.data_dir = data_dir
         with open(os.path.join(self.data_dir, 'config.json'), 'r') as f_config:
             self.config = json.load(f_config)
+
+        self.children = None
+        time_cover = self.config['time_cover']
+        if time_cover['cover'] == 'all':
+            self._make_children(time_cover)
+        elif time_cover['cover'] == 'today':
+            start = datetime.date.today().year - time_cover['range'] // 2
+            end = start + time_cover['range'] - 1
+            self.config['time_cover']['cover'] = '{}-{}'.format(start, end)
+        if self.verbose:
+            print('Data dir : {}'.format(self.data_dir))
+            print('time cover : {}'.format(self.config['time_cover']['cover']))
+
         self.bodies = list(self.config['bodies'].keys())
 
-        self.verbose = verbose
+    def _make_children(self, time_cover):
+        self.children = list()
+        for start in np.arange(1850, 2250, time_cover['range']):
+            end = start + time_cover['range'] - 1
+            new_config = self.config.copy()
+            new_config['time_cover']['cover'] = '{}-{}'.format(start, end)
+
+            new_data_dir = os.path.join(self.data_dir, '{}-{}'.format(start, end))
+            os.makedirs(new_data_dir, exist_ok=True)
+            with open(os.path.join(new_data_dir, 'config.json'), 'w') as f_config:
+                json.dump(new_config, f_config, indent=2)
+                f_config.write("\n")
+            self.children.append(Horizons(new_data_dir, verbose=self.verbose))
 
     def get_data(self, body):
         assert body in self.bodies, "Requested body not in config"
 
-        today = datetime.date.today()
-        span = datetime.timedelta(days=self.config['range_years'] * 365.2425)
+        start, stop = self.config['time_cover']['cover'].split('-')
 
         url = "https://ssd.jpl.nasa.gov/horizons_batch.cgi"
         url += '?'
         for k, v in self.config['base'].items():
             if v is None:
                 if k == "START_TIME":
-                    v = (today - span).isoformat()
+                    v = '{}-01-01'.format(start)
                 elif k == "STOP_TIME":
-                    v = (today + span).isoformat()
+                    v = '{}-12-31'.format(stop)
                 else:
                     v = self.config['bodies'][body][k]
 
-            url += "&{}='{}'\n".format(k, v)
+            url += "&{}='{}'".format(k, v)
+        if self.verbose:
+            print('\nRequest :\n{}\n'.format(url))
 
         txt_path = os.path.join(self.data_dir, '{}.txt'.format(body))
         with open(txt_path, 'w') as f_txt:
             response = requests.get(url).text
             f_txt.write(response)
-        print('Created {} (size {}).'.format(txt_path, len(response)))
+        if self.verbose:
+            print('Created {} (size {} chars).'.format(txt_path, len(response)))
 
     def parse_data(self, body):
         assert body in self.bodies, "Requested body not in config"
+
         txt_path = os.path.join(self.data_dir, '{}.txt'.format(body))
         csv_path = os.path.join(self.data_dir, '{}.csv'.format(body))
         with open(txt_path, 'r') as f_txt:
@@ -53,8 +84,7 @@ class Horizons:
                 if line[:5] == '$$SOE':
                     break
             else:
-                if self.verbose:
-                    print('Error with {}'.format(txtfile))
+                print('**\n** Not created: {}\n**'.format(csv_path))
                 return
 
             with open(csv_path, 'w') as f_csv:
@@ -75,10 +105,16 @@ class Horizons:
           df[k] = df[k].round(v)
 
         df.to_csv(csv_path, index=False)
-        print('\tCreated {} (size {}).'.format(csv_path, len(df)))
+        print('* Created {} (size {} lines).'.format(csv_path, len(df)))
         os.remove(txt_path)
 
     def main(self, bodies=None):
+
+        if self.children is not None:
+            for c in self.children:
+                c.main(bodies=bodies)
+            return
+
         if bodies is None:
             bodies = self.bodies
         elif isinstance(bodies, str):
@@ -126,15 +162,19 @@ class Stars:
     Extracts coordinates and magnitude, converts to ecliptic coordinates in a .csv
     """
     def __init__(self, data_dir, verbose=False):
+        self.verbose = verbose
+
         self.data_dir = data_dir
+        if self.verbose:
+            print('Data dir : {}'.format(self.data_dir))
         with open(os.path.join(self.data_dir, 'config.json'), 'r') as f_config:
             self.config = json.load(f_config)
         self.dat_path = os.path.join(self.data_dir, 'bsc5.dat')
         self.csv_path = os.path.join(self.data_dir, 'bsc5.csv')
 
-        self.verbose = verbose
-
     def get_data(self):
+        if self.verbose:
+            print('URL : {}'.format(self.config['url']))
         os.system("wget {}".format(self.config['url']))
         os.system("gzip -d bsc5.dat.gz")
         os.system("rm -f bsc5.dat.gz")
@@ -164,7 +204,7 @@ class Stars:
 
         df = df.drop(['RA', 'Dec'], axis='columns')
         df.to_csv(self.csv_path, index=False)
-        print('\tCreated {} (size {}).'.format(self.csv_path, len(df)))
+        print('* Created {} (size {} lines).'.format(self.csv_path, len(df)))
         os.remove(self.dat_path)
 
     def main(self):

@@ -1,5 +1,11 @@
 .idea/
 __pycache__/
 
-html/data/*/*.csv
-html/data/*/*.txt
+html/data/lite/*
+!html/data/lite/config.json
+html/data/full/*
+!html/data/full/config.json
+html/data/high_frequency/*
+!html/data/high_frequency/config.json
+html/data/stars/*
+!html/data/stars/config.json

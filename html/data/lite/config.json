@@ -1,5 +1,8 @@
 {
-  "range_years": 2,
+  "time_cover": {
+    "range": 5,
+    "cover": "today"
+  },
   "rounding": {
     "ecliptic_longitude": 3,
     "ecliptic_latitude": 3
