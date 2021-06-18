@@ -21,6 +21,13 @@ const plColors = {
   mars: '#893400',
   jupiter: '#89632a',
   saturn: '#56451a',
+
+  uranus: '#5580aa',
+  neptune: '#366896',
+  vesta: '#404040',
+  iris: '#404040',
+  ceres: '#404040',
+  pallas: '#404040'
 };
 
 class Database {
@@ -117,6 +124,13 @@ const mars = new Interpolator('mars');
 const jupiter = new Interpolator('jupiter');
 const saturn = new Interpolator('saturn');
 
+const uranus = new Interpolator('uranus');
+const neptune = new Interpolator('neptune');
+const vesta = new Interpolator('vesta');
+const iris = new Interpolator('iris');
+const ceres = new Interpolator('ceres');
+const pallas = new Interpolator('pallas');
+
 function drawHand(color, angle) {
   ctx.globalAlpha = 0.8;
   ctx.strokeStyle = color;
@@ -179,6 +193,13 @@ function updateClock() {
   drawHand(plColors.mars, mars.longitude(date));
   drawHand(plColors.jupiter, jupiter.longitude(date));
   drawHand(plColors.saturn, saturn.longitude(date));
+
+  drawHand(plColors.uranus, neptune.longitude(date));
+  drawHand(plColors.neptune, uranus.longitude(date));
+  drawHand(plColors.vesta, vesta.longitude(date));
+  drawHand(plColors.iris, iris.longitude(date));
+  drawHand(plColors.ceres, ceres.longitude(date));
+  drawHand(plColors.pallas, pallas.longitude(date));
 
   drawDisk('white', 20);
 }
