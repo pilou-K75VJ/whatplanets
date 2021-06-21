@@ -1,5 +1,5 @@
 const ctx = document.getElementById('planets').getContext('2d');
-ctx.translate(400, 400);  // Translate to center
+ctx.translate(320, 320);  // Translate to center
 
 const txtDate = document.querySelector('#date');
 const earth = document.querySelector("#earth");
@@ -19,18 +19,26 @@ const BNow = document.querySelector('#B-now');
 const plColors = {
   sun: '#ffd400',
   moon: '#f7f7f7',
+
   mercury: '#7f7f7f',
   venus: '#afafaf',
   mars: '#893400',
   jupiter: '#89632a',
   saturn: '#56451a',
+  uranus: '#5580aa',
+  neptune: '#366896',
+
+  vesta: '#404040',
+  iris: '#404040',
+  ceres: '#404040',
+  pallas: '#404040'
 };
 
 class Database {
-  constructor(name, size) {
+  constructor(name, body) {
     this.name = name;
-    this.size = size;
-    this.csvPath = `data/${size}/${name}.csv`;
+    this.body = body;
+    this.csvPath = `data/${name}/${body}.csv`;
 
     this.dateMin = undefined;  // TODO
     this.dateMax = undefined;
@@ -54,10 +62,9 @@ class Database {
 }
 
 class Interpolator {
-  constructor(name) {
-    this.name = name;
-
-    this.smallDatabase = new Database(name, 'small');
+  constructor(body) {
+    this.body = body;
+    this.database = new Database('lite', body);
 
     this.lon1 = undefined;
     this.lon2 = undefined;
@@ -69,7 +76,7 @@ class Interpolator {
   updateDates(date) {
     let nextIndex = -1;
 
-    this.smallDatabase.rows.some(function(row) {
+    this.database.rows.some(function(row) {
       nextIndex += 1;
       if (nextIndex === 0) { return false; }
       return Date.UTC(
@@ -79,7 +86,7 @@ class Interpolator {
       ) > date;  // Exit loop when (row date > required date)
     });
 
-    let row1 = this.smallDatabase.rows[nextIndex - 1];
+    let row1 = this.database.rows[nextIndex - 1];
     this.lon1 = parseFloat(row1.split(',')[1]);  // Ecliptic longitude
     this.date1 = Date.UTC(
       parseInt(row1.slice(0, 4)),  // year
@@ -87,7 +94,7 @@ class Interpolator {
       parseInt(row1.slice(8, 10))  // day
     );
 
-    let row2 = this.smallDatabase.rows[nextIndex];
+    let row2 = this.database.rows[nextIndex];
     this.lon2 = parseFloat(row2.split(',')[1]);  // Ecliptic longitude
     this.date2 = Date.UTC(
       parseInt(row2.slice(0, 4)),  // year
@@ -115,19 +122,27 @@ class Interpolator {
 
 const sun = new Interpolator('sun');
 const moon = new Interpolator('moon');
+
 const mercury = new Interpolator('mercury');
 const venus = new Interpolator('venus');
 const mars = new Interpolator('mars');
 const jupiter = new Interpolator('jupiter');
 const saturn = new Interpolator('saturn');
+const uranus = new Interpolator('uranus');
+const neptune = new Interpolator('neptune');
+
+const vesta = new Interpolator('vesta');
+const iris = new Interpolator('iris');
+const ceres = new Interpolator('ceres');
+const pallas = new Interpolator('pallas');
 
 function drawHand(color, angle) {
   ctx.globalAlpha = 0.8;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 5;
+  ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.lineTo(350 * Math.cos(angle), 350 * Math.sin(angle));
+  ctx.lineTo(300 * Math.cos(angle), 300 * Math.sin(angle));
   ctx.stroke();
 }
 
@@ -173,6 +188,7 @@ B4.onclick = setSpeed(10000);
 B5.onclick = setSpeed(100000);
 B6.onclick = setSpeed(1000000);
 B7.onclick = setSpeed(10000000);
+
 txtDate.oninput = function() {
   speed = 1;
   offset = txtDate.valueAsNumber - speed * Date.now();
@@ -185,23 +201,32 @@ function updateClock() {
   date = offset + speed * Date.now();
   txtDate.valueAsNumber = date;
 
-  ctx.clearRect(-400, -400, 800, 800);
-  drawDisk('black', 380, alpha=0.6);
+  ctx.clearRect(-320, -320, 640, 640);
+  drawDisk('black', 310, alpha=0.6);
 
   ctx.lineCap = 'round';
   sunLongitude = sun.longitude(date);
+
   drawHand(plColors.sun, sunLongitude);
   if (Math.abs(speed) < 10000000) {
     drawHand(plColors.moon, moon.longitude(date));
   }
+
   drawHand(plColors.mercury, mercury.longitude(date));
   drawHand(plColors.venus, venus.longitude(date));
   drawHand(plColors.mars, mars.longitude(date));
   drawHand(plColors.jupiter, jupiter.longitude(date));
   drawHand(plColors.saturn, saturn.longitude(date));
+  drawHand(plColors.uranus, neptune.longitude(date));
+  drawHand(plColors.neptune, uranus.longitude(date));
+
+  drawHand(plColors.vesta, vesta.longitude(date));
+  drawHand(plColors.iris, iris.longitude(date));
+  drawHand(plColors.ceres, ceres.longitude(date));
+  drawHand(plColors.pallas, pallas.longitude(date));
 
   drawEarth(date, sunLongitude);
 }
 
 updateClock();
-setInterval(updateClock, 1000 / 50);
+setInterval(updateClock, 1000 / 30);
