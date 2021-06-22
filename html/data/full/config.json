@@ -1,8 +1,6 @@
 {
-  "time_cover": {
-    "range": 50,
-    "cover": "all"
-  },
+  "time_cover": 50,
+  "time_cover": "all",
   "rounding": {
     "ecliptic_longitude": 3,
     "ecliptic_latitude": 3

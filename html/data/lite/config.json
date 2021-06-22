@@ -1,11 +1,9 @@
 {
-  "time_cover": {
-    "range": 5,
-    "cover": "today"
-  },
+  "format": "json",
+  "time_range": 5,
+  "time_cover": "today",
   "rounding": {
-    "ecliptic_longitude": 3,
-    "ecliptic_latitude": 3
+    "ecliptic_longitude": 3
   },
   "bodies": {
     "sun": {
@@ -38,7 +36,7 @@
     },
     "uranus": {
       "COMMAND": "799",
-      "STEP_SIZE": "30 d"
+      "STEP_SIZE": "40 d"
     },
     "neptune": {
       "COMMAND": "899",

@@ -1,8 +1,7 @@
 {
-  "time_cover": {
-    "range": 10,
-    "cover": "today"
-  },
+  "format": "csv",
+  "time_range": 10,
+  "time_cover": "today",
   "rounding": {},
   "bodies": {
     "sun": {
@@ -14,31 +13,31 @@
       "STEP_SIZE": "1 h"
     },
     "mercury": {
-      "COMMAND": "199",
+      "COMMAND": "1",
       "STEP_SIZE": "1 h"
     },
     "venus": {
-      "COMMAND": "299",
+      "COMMAND": "2",
       "STEP_SIZE": "1 h"
     },
     "mars": {
-      "COMMAND": "499",
+      "COMMAND": "4",
       "STEP_SIZE": "1 h"
     },
     "jupiter": {
-      "COMMAND": "599",
+      "COMMAND": "5",
       "STEP_SIZE": "1 h"
     },
     "saturn": {
-      "COMMAND": "699",
+      "COMMAND": "6",
       "STEP_SIZE": "1 h"
     },
     "uranus": {
-      "COMMAND": "799",
+      "COMMAND": "7",
       "STEP_SIZE": "1 h"
     },
     "neptune": {
-      "COMMAND": "899",
+      "COMMAND": "8",
       "STEP_SIZE": "1 h"
     },
     "vesta": {

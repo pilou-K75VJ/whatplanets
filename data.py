@@ -22,27 +22,28 @@ class Horizons:
         self.children = None
 
         time_cover = self.config['time_cover']
-        if time_cover['cover'] == 'all':
-            self._make_children(time_cover)
-        elif time_cover['cover'] == 'today':
-            start = datetime.date.today().year - time_cover['range'] // 2
-            end = start + time_cover['range'] - 1
-            self.config['time_cover']['cover'] = '{}-{}'.format(start, end)
+        time_range = self.config['time_range']
+        if time_cover == 'all':
+            self._make_children(time_cover, time_range)
+        elif time_cover == 'today':
+            start = datetime.date.today().year - time_range // 2
+            end = start + time_range - 1
+            self.config['time_cover'] = '{}-{}'.format(start, end)
 
         if self.verbose:
             print('Data dir : {}'.format(self.data_dir))
-            print('time cover : {}'.format(self.config['time_cover']['cover']))
+            print('time cover : {}'.format(self.config['time_cover']))
 
         self.bodies = list(self.config['bodies'].keys())
 
-    def _make_children(self, time_cover):
+    def _make_children(self, time_cover, time_range):
         self.children = list()
-        for start in np.arange(1850, 2250, time_cover['range']):
-            end = start + time_cover['range'] - 1
+        for start in np.arange(1850, 2250, time_range):
+            end = start + time_range - 1
             new_config = self.config.copy()
-            new_config['time_cover']['cover'] = '{}-{}'.format(start, end)
+            new_config['time_cover'] = '{}-{}'.format(start, end)
 
-            new_data_dir = os.path.join(self.data_dir, '{}-{}'.format(start, end))
+            new_data_dir = os.path.join(self.data_dir, new_config['time_cover'])
             os.makedirs(new_data_dir, exist_ok=True)
             with open(os.path.join(new_data_dir, 'config.json'), 'w') as f_config:
                 json.dump(new_config, f_config, indent=2)
@@ -57,7 +58,7 @@ class Horizons:
                 c.get_data(body=body)
             return
 
-        start, stop = self.config['time_cover']['cover'].split('-')
+        start, stop = self.config['time_cover'].split('-')
 
         url = "https://ssd.jpl.nasa.gov/horizons_batch.cgi"
         url += '?'
@@ -88,45 +89,51 @@ class Horizons:
         assert body in self.bodies, "Requested body not in config"
 
         if self.children is not None:
-            with open(os.path.join(self.data_dir, '{}.index.csv'.format(body)), 'w') as f_index:
-                f_index.write("name,start,stop\n")
-                for c in self.children:
-                    f_index.write(c.parse_data(body=body))
+            for c in self.children:
+                c.parse_data(body=body)
             return
 
-        txt_path = os.path.join(self.data_dir, '{}.txt'.format(body))
-        csv_path = os.path.join(self.data_dir, '{}.csv'.format(body))
-        with open(txt_path, 'r') as f_txt:
+        path = lambda ext: os.path.join(self.data_dir, '{}.{}'.format(body, ext))
+        with open(path('txt'), 'r') as f_txt:
             for line in f_txt:
                 if line[:5] == '$$SOE':
                     break
             else:
-                print('**\n** Not created: {}\n**'.format(csv_path))
+                print('**\n** Not created: {}\n**'.format(path('csv')))
                 return
 
-            with open(csv_path, 'w') as f_csv:
+            with open(path('tmp.csv'), 'w') as f_csv:
                 f_csv.write("timestamp,daylight,moon,ecliptic_longitude,ecliptic_latitude,\n")
-                for line in f_txt:
+                for n, line in enumerate(f_txt):
                     if line[:5] == '$$EOE':
                         break
                     f_csv.write(line)
 
+        if self.verbose:
+            print('Created {} (size {} lines).'.format(path('tmp.csv'), n))
+
         # Clean data
-        df = pd.read_csv(csv_path)[['timestamp', 'ecliptic_longitude', 'ecliptic_latitude']]
+        df = pd.read_csv(path('tmp.csv'))[['timestamp', 'ecliptic_longitude']]
 
         df.timestamp = pd.to_datetime(df.timestamp.str.strip(), format='%Y-%b-%d %H:%M')
-        df[['ecliptic_longitude', 'ecliptic_latitude']] = df[
-            ['ecliptic_longitude', 'ecliptic_latitude']].astype('float').mul(pi / 180.)
+        df['ecliptic_longitude'] = df['ecliptic_longitude'].astype('float').mul(pi / 180.)
 
         for k, v in self.config['rounding'].items():
           df[k] = df[k].round(v)
 
-        df.to_csv(csv_path, index=False)
-        print('* Created {} (size {} lines).'.format(csv_path, len(df)))
-        os.remove(txt_path)
+        if self.config['format'] == 'csv':
+            df.to_csv(path('csv'), index=False)
+        elif self.config['format'] == 'json':
+            df.to_json(path('json'), orient='split')
+        else:
+            raise NotImplementedError
+
+        print('* Created {} (size {} lines).'.format(path(self.config['format']), len(df)))
+        os.remove(path('txt'))
+        os.remove(path('tmp.csv'))
 
         str_date = lambda i: df.timestamp.iloc[i].strftime('%Y-%m-%d')
-        return '{},{},{}\n'.format(self.config['time_cover']['cover'], str_date(0), str_date(-1))
+        return str_date(0), str_date(-1)
 
     def main(self, bodies=None):
 
@@ -184,19 +191,19 @@ class Stars:
             print('Data dir : {}'.format(self.data_dir))
         with open(os.path.join(self.data_dir, 'config.json'), 'r') as f_config:
             self.config = json.load(f_config)
-        self.dat_path = os.path.join(self.data_dir, 'bsc5.dat')
-        self.csv_path = os.path.join(self.data_dir, 'bsc5.csv')
 
     def get_data(self):
         if self.verbose:
             print('URL : {}'.format(self.config['url']))
+
         os.system("wget {}".format(self.config['url']))
         os.system("gzip -d bsc5.dat.gz")
         os.system("rm -f bsc5.dat.gz")
         os.system("mv bsc5.dat {}".format(self.data_dir))
 
     def parse_data(self):
-        with open(self.dat_path, 'r') as f_dat:
+        path = lambda ext: os.path.join(self.data_dir, 'bsc5.{}'.format(ext))
+        with open(path('dat'), 'r') as f_dat:
             data = {key: list() for key in ['RA', 'Dec', 'magnitude']}
             for line in f_dat:
                 try:
@@ -212,15 +219,23 @@ class Stars:
                     if self.verbose:
                         print('Error on line :\n{}'.format(line))
                     continue
+
         df = pd.DataFrame(data).sort_values('magnitude').reset_index(drop=True)
         df['ecliptic_longitude'], df['ecliptic_latitude'] = equatorial_to_ecliptic(df['RA'], df['Dec'])
         for k, v in self.config['rounding'].items():
           df[k] = df[k].round(v)
 
         df = df.drop(['RA', 'Dec'], axis='columns')
-        df.to_csv(self.csv_path, index=False)
-        print('* Created {} (size {} lines).'.format(self.csv_path, len(df)))
-        os.remove(self.dat_path)
+
+        if self.config['format'] == 'csv':
+            df.to_csv(path('csv'), index=False)
+        elif self.config['format'] == 'json':
+            df.to_json(path('json'), orient='split', index=False)
+        else:
+            raise NotImplementedError
+
+        print('* Created {} (size {} lines).'.format(path(self.config['format']), len(df)))
+        os.remove(path('dat'))
 
     def main(self):
         self.get_data()
@@ -238,7 +253,7 @@ if __name__ == '__main__':
 
     if args.planets is not None:
         H = Horizons(args.planets, verbose=args.verbose)
-        H.main()
+        H.main('sun')
         # H._dt_max_all()
 
     if args.stars is not None:
