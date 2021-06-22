@@ -20,6 +20,7 @@ class Horizons:
             self.config = json.load(f_config)
 
         self.children = None
+
         time_cover = self.config['time_cover']
         if time_cover['cover'] == 'all':
             self._make_children(time_cover)
@@ -27,6 +28,7 @@ class Horizons:
             start = datetime.date.today().year - time_cover['range'] // 2
             end = start + time_cover['range'] - 1
             self.config['time_cover']['cover'] = '{}-{}'.format(start, end)
+
         if self.verbose:
             print('Data dir : {}'.format(self.data_dir))
             print('time cover : {}'.format(self.config['time_cover']['cover']))
@@ -50,6 +52,11 @@ class Horizons:
     def get_data(self, body):
         assert body in self.bodies, "Requested body not in config"
 
+        if self.children is not None:
+            for c in self.children:
+                c.get_data(body=body)
+            return
+
         start, stop = self.config['time_cover']['cover'].split('-')
 
         url = "https://ssd.jpl.nasa.gov/horizons_batch.cgi"
@@ -57,25 +64,35 @@ class Horizons:
         for k, v in self.config['base'].items():
             if v is None:
                 if k == "START_TIME":
-                    v = '{}-01-01'.format(start)
+                    v = '{}-01-01'.format(int(start))
                 elif k == "STOP_TIME":
-                    v = '{}-12-31'.format(stop)
+                    v = '{}-03-01'.format(int(stop) + 1)
                 else:
                     v = self.config['bodies'][body][k]
 
             url += "&{}='{}'".format(k, v)
+
         if self.verbose:
             print('\nRequest :\n{}\n'.format(url))
 
+        response = requests.get(url).text
+
         txt_path = os.path.join(self.data_dir, '{}.txt'.format(body))
         with open(txt_path, 'w') as f_txt:
-            response = requests.get(url).text
             f_txt.write(response)
+
         if self.verbose:
             print('Created {} (size {} chars).'.format(txt_path, len(response)))
 
     def parse_data(self, body):
         assert body in self.bodies, "Requested body not in config"
+
+        if self.children is not None:
+            with open(os.path.join(self.data_dir, '{}.index.csv'.format(body)), 'w') as f_index:
+                f_index.write("name,start,stop\n")
+                for c in self.children:
+                    f_index.write(c.parse_data(body=body))
+            return
 
         txt_path = os.path.join(self.data_dir, '{}.txt'.format(body))
         csv_path = os.path.join(self.data_dir, '{}.csv'.format(body))
@@ -108,12 +125,10 @@ class Horizons:
         print('* Created {} (size {} lines).'.format(csv_path, len(df)))
         os.remove(txt_path)
 
-    def main(self, bodies=None):
+        str_date = lambda i: df.timestamp.iloc[i].strftime('%Y-%m-%d')
+        return '{},{},{}\n'.format(self.config['time_cover']['cover'], str_date(0), str_date(-1))
 
-        if self.children is not None:
-            for c in self.children:
-                c.main(bodies=bodies)
-            return
+    def main(self, bodies=None):
 
         if bodies is None:
             bodies = self.bodies

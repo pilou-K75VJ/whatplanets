@@ -3,7 +3,8 @@ ctx.translate(320, 320);  // Translate to center
 
 const txtDate = document.querySelector('#date');
 const earth = document.querySelector("#earth");
-// const test = document.querySelector('#test');
+const test = document.querySelector('#test');
+test.textContent = '...';
 
 const b7 = document.querySelector('#b7');
 const b6 = document.querySelector('#b6');
@@ -40,9 +41,6 @@ class Database {
     this.body = body;
     this.csvPath = `data/${name}/${body}.csv`;
 
-    this.dateMin = undefined;  // TODO
-    this.dateMax = undefined;
-
     // Get raw CSV content
     let txt = undefined;
     let rawFile = new XMLHttpRequest();
@@ -64,6 +62,21 @@ class Database {
 class Interpolator {
   constructor(body) {
     this.body = body;
+
+    // Get index of databases
+    let txt = undefined;
+    let rawFile = new XMLHttpRequest();
+    rawFile.open('GET', `data/full/${body}.index.csv`, false);
+    rawFile.onreadystatechange = function () {
+      if (rawFile.readyState === 4) {
+        if (rawFile.status === 200 || rawFile.status == 0) {
+          txt = rawFile.responseText;
+        }
+      }
+    }
+    rawFile.send(null);
+    this.index = txt.split('\n');
+
     this.database = new Database('lite', body);
 
     this.lon1 = undefined;
@@ -157,12 +170,12 @@ function drawDisk(color, radius, alpha = 1) {
 function drawEarth(date, sunLongitude) {
   ctx.globalAlpha = 1;
 
-  UTCDate = new Date(date);
-  hours = UTCDate.getUTCHours();
-  minutes = UTCDate.getUTCMinutes();
-  seconds = UTCDate.getUTCSeconds();
-
-  angle = sunLongitude - Math.PI * (seconds + 60 * minutes + 3600 * hours) / 43200 + Math.PI;
+  let UTCDate = new Date(date);
+  let angle = sunLongitude - Math.PI * (1 + (
+                3600 * UTCDate.getUTCHours()
+                + 60 * UTCDate.getUTCMinutes()
+                + UTCDate.getUTCSeconds()
+              ) / 43200);
   ctx.rotate(angle);
   ctx.drawImage(earth, -150, -150, 300, 300);
   ctx.rotate(-angle);
