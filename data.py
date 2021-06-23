@@ -21,6 +21,7 @@ class Horizons:
 
         self.children = None
 
+        # Compute time cover
         time_cover = self.config['time_cover']
         time_range = self.config['time_range']
         if time_cover == 'all':
@@ -37,6 +38,9 @@ class Horizons:
         self.bodies = list(self.config['bodies'].keys())
 
     def _make_children(self, time_cover, time_range):
+        '''
+        Wrapper for hierarchical data
+        '''
         self.children = list()
         for start in np.arange(1850, 2250, time_range):
             end = start + time_range - 1
@@ -51,8 +55,12 @@ class Horizons:
             self.children.append(Horizons(new_data_dir, verbose=self.verbose))
 
     def get_data(self, body):
+        '''
+        Request to Nasa Horizons service
+        '''
         assert body in self.bodies, "Requested body not in config"
 
+        # Wrapper for hierarchical data
         if self.children is not None:
             for c in self.children:
                 c.get_data(body=body)
@@ -60,6 +68,7 @@ class Horizons:
 
         start, stop = self.config['time_cover'].split('-')
 
+        # Constructing HTTP GET request
         url = "https://ssd.jpl.nasa.gov/horizons_batch.cgi"
         url += '?'
         for k, v in self.config['base'].items():
@@ -76,9 +85,10 @@ class Horizons:
         if self.verbose:
             print('\nRequest :\n{}\n'.format(url))
 
+        # Interrogating Nasa Horizons Service
         response = requests.get(url).text
 
-        txt_path = os.path.join(self.data_dir, '{}.txt'.format(body))
+        txt_path = os.path.join(self.data_dir, '{}.tmp.txt'.format(body))
         with open(txt_path, 'w') as f_txt:
             f_txt.write(response)
 
@@ -86,15 +96,21 @@ class Horizons:
             print('Created {} (size {} chars).'.format(txt_path, len(response)))
 
     def parse_data(self, body):
+        '''
+        Transform raw response to formatted JSON
+        '''
         assert body in self.bodies, "Requested body not in config"
 
+        # Wrapper for hierarchical data
         if self.children is not None:
             for c in self.children:
                 c.parse_data(body=body)
             return
 
         path = lambda ext: os.path.join(self.data_dir, '{}.{}'.format(body, ext))
-        with open(path('txt'), 'r') as f_txt:
+
+        # Transform to CSV
+        with open(path('tmp.txt'), 'r') as f_txt:
             for line in f_txt:
                 if line[:5] == '$$SOE':
                     break
@@ -113,30 +129,22 @@ class Horizons:
             print('Created {} (size {} lines).'.format(path('tmp.csv'), n))
 
         # Clean data
+        date_format = '%Y%m%d'
+        if self.config['bodies'][body]['STEP_SIZE'][-1] != 'd':
+            date_format += '%H%M'
         df = pd.read_csv(path('tmp.csv'))[['timestamp', 'ecliptic_longitude']]
+        df.ecliptic_longitude = df.ecliptic_longitude.astype('float').mul(pi / 180.).round(self.config['rounding'])
+        df.timestamp = pd.to_datetime(df.timestamp.str.strip(), format='%Y-%b-%d %H:%M').dt.strftime(date_format)
+        df = df.set_index('timestamp').ecliptic_longitude
 
-        df.timestamp = pd.to_datetime(df.timestamp.str.strip(), format='%Y-%b-%d %H:%M')
-        df['ecliptic_longitude'] = df['ecliptic_longitude'].astype('float').mul(pi / 180.)
+        # Save as JSON
+        df.to_json(path('json'))
 
-        for k, v in self.config['rounding'].items():
-          df[k] = df[k].round(v)
-
-        if self.config['format'] == 'csv':
-            df.to_csv(path('csv'), index=False)
-        elif self.config['format'] == 'json':
-            df.to_json(path('json'), orient='split')
-        else:
-            raise NotImplementedError
-
-        print('* Created {} (size {} lines).'.format(path(self.config['format']), len(df)))
-        os.remove(path('txt'))
+        print('* Created {} (size {} lines).'.format(path('json'), len(df)))
+        os.remove(path('tmp.txt'))
         os.remove(path('tmp.csv'))
 
-        str_date = lambda i: df.timestamp.iloc[i].strftime('%Y-%m-%d')
-        return str_date(0), str_date(-1)
-
     def main(self, bodies=None):
-
         if bodies is None:
             bodies = self.bodies
         elif isinstance(bodies, str):
@@ -145,33 +153,43 @@ class Horizons:
         for body in bodies:
             self.get_data(body)
             self.parse_data(body)
+            if 'high_frequency' in self.data_dir:
+                self._main_dt_max(body)
 
     def _dt_max(self, body, err=pi / 180.):
         """
         How much temporal resolution do we need?
         https://math.stackexchange.com/questions/1021799/bound-remainder-of-taylor-series-with-lipschitz-property-of-derivative
         """
-        csv_path = os.path.join(self.data_dir, '{}.csv'.format(body))
-        df = pd.read_csv(csv_path, parse_dates=['timestamp'])
+        json_path = os.path.join(self.data_dir, '{}.json'.format(body))
+        df = pd.read_json(json_path, typ='series', convert_axes=False, convert_dates=False)
+        df = pd.DataFrame(data={'timestamp': pd.to_datetime(df.index, format='%Y%m%d%H%M'), 'ecliptic_longitude': df.reset_index(drop=True)})
         dt = (df.timestamp.iloc[1] - df.timestamp.iloc[0]).seconds
 
+        # Compute 1st and 2nd derivatives
         dl = df.ecliptic_longitude.diff()
         dl = dl.where(dl.abs() < pi)
         dl = dl.div(dt)
-
         dl2 = dl.diff().div(dt)
 
+        # Compute Lipschitz constants
         a_max = dl2.abs().quantile(0.999)
         v_max = dl.abs().quantile(0.999)
 
+        # Compute minimum dj (time resolution) for bounded error (< 1°)
         dj_max_p = (err / v_max) / (3600. * 24.)
         dj_max_v = (2. * err / v_max) / (3600. * 24.)
         dj_max_a = ((2. * err / a_max) ** 0.5) / (3600. * 24.)
 
         print("{}: {:.1f}d / {:.1f}d / {:.1f}d".format(body, dj_max_p, dj_max_v, dj_max_a))
 
-    def _dt_max_all(self, err=pi / 180.):
-        for body in self.bodies:
+    def _main_dt_max(self, bodies=None, err=pi/180.):
+        if bodies is None:
+            bodies = self.bodies
+        elif isinstance(bodies, str):
+            bodies = [bodies]
+
+        for body in bodies:
             try:
                 self._dt_max(body, err=err)
             except FileNotFoundError:
@@ -181,7 +199,7 @@ class Horizons:
 class Stars:
     """
     Parses the .dat star database retrieved from http://tdc-www.harvard.edu/catalogs/bsc5.html
-    Extracts coordinates and magnitude, converts to ecliptic coordinates in a .csv
+    Extracts coordinates and magnitude, converts to ecliptic coordinates in a JSON
     """
     def __init__(self, data_dir, verbose=False):
         self.verbose = verbose
@@ -253,8 +271,7 @@ if __name__ == '__main__':
 
     if args.planets is not None:
         H = Horizons(args.planets, verbose=args.verbose)
-        H.main('sun')
-        # H._dt_max_all()
+        H.main()
 
     if args.stars is not None:
         S = Stars(args.stars, verbose=args.verbose)

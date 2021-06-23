@@ -1,10 +1,7 @@
 {
-  "time_cover": 50,
+  "time_range": 50,
   "time_cover": "all",
-  "rounding": {
-    "ecliptic_longitude": 3,
-    "ecliptic_latitude": 3
-  },
+  "rounding": 3,
   "bodies": {
     "sun": {
       "COMMAND": "10",
@@ -36,7 +33,7 @@
     },
     "uranus": {
       "COMMAND": "7",
-      "STEP_SIZE": "30 d"
+      "STEP_SIZE": "40 d"
     },
     "neptune": {
       "COMMAND": "8",

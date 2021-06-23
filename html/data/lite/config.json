@@ -1,10 +1,7 @@
 {
-  "format": "json",
   "time_range": 5,
   "time_cover": "today",
-  "rounding": {
-    "ecliptic_longitude": 3
-  },
+  "rounding": 3,
   "bodies": {
     "sun": {
       "COMMAND": "10",
@@ -15,31 +12,31 @@
       "STEP_SIZE": "2 d"
     },
     "mercury": {
-      "COMMAND": "199",
+      "COMMAND": "1",
       "STEP_SIZE": "3 d"
     },
     "venus": {
-      "COMMAND": "299",
+      "COMMAND": "2",
       "STEP_SIZE": "6 d"
     },
     "mars": {
-      "COMMAND": "499",
+      "COMMAND": "4",
       "STEP_SIZE": "10 d"
     },
     "jupiter": {
-      "COMMAND": "599",
+      "COMMAND": "5",
       "STEP_SIZE": "20 d"
     },
     "saturn": {
-      "COMMAND": "699",
+      "COMMAND": "6",
       "STEP_SIZE": "30 d"
     },
     "uranus": {
-      "COMMAND": "799",
+      "COMMAND": "7",
       "STEP_SIZE": "40 d"
     },
     "neptune": {
-      "COMMAND": "899",
+      "COMMAND": "8",
       "STEP_SIZE": "50 d"
     },
     "vesta": {

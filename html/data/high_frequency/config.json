@@ -1,8 +1,7 @@
 {
-  "format": "csv",
   "time_range": 10,
   "time_cover": "today",
-  "rounding": {},
+  "rounding": 10,
   "bodies": {
     "sun": {
       "COMMAND": "10",
