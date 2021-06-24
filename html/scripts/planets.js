@@ -132,7 +132,6 @@ class Interpolator {
       }
     }
     let x = (date - this.date1) / this.span;
-    if (this.body == 'sun') { test.textContent = x; }
     return -(this.lon1 * (1 - x) + this.lon2 * x);
   }
 }
