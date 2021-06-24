@@ -3,8 +3,9 @@ ctx.translate(320, 320);  // Translate to center
 
 const txtDate = document.querySelector('#date');
 const earth = document.querySelector("#earth");
-const test = document.querySelector('#test');
+// const test = document.querySelector('#test');
 
+// Buttons
 const b7 = document.querySelector('#b7');
 const b6 = document.querySelector('#b6');
 const b5 = document.querySelector('#b5');
@@ -16,29 +17,36 @@ const B6 = document.querySelector('#B6');
 const B7 = document.querySelector('#B7');
 const BNow = document.querySelector('#B-now');
 
+// Planets
 const plColors = {
-  sun: '#ffd400',
-  moon: '#f7f7f7',
+  'sun': '#ffd400',
+  'moon': '#f7f7f7',
 
-  mercury: '#7f7f7f',
-  venus: '#afafaf',
-  mars: '#893400',
-  jupiter: '#89632a',
-  saturn: '#56451a',
-  uranus: '#5580aa',
-  neptune: '#366896',
+  'mercury': '#7f7f7f',
+  'venus': '#afafaf',
+  'mars': '#893400',
+  'jupiter': '#89632a',
+  'saturn': '#56451a',
+  'uranus': '#5580aa',
+  'neptune': '#366896',
 
-  vesta: '#404040',
-  iris: '#404040',
-  ceres: '#404040',
-  pallas: '#404040'
+  'vesta': '#404040',
+  'iris': '#404040',
+  'ceres': '#404040',
+  'pallas': '#404040'
 };
 
-function date2Str(date, offsetDays = 0) {
-  let d = new Date(date + offsetDays * 86400000);
-  return d.getUTCFullYear().toString().padStart(4, '0')
-         + (d.getUTCMonth() + 1).toString().padStart(2, '0')
-         + d.getUTCDate().toString().padStart(2, '0');
+function date2YMD(date) {
+  let d = new Date(date);
+  return d.getUTCFullYear().toString().padStart(4, '0')  // year
+         + (d.getUTCMonth() + 1).toString().padStart(2, '0')  // month
+         + d.getUTCDate().toString().padStart(2, '0');  // day
+}
+
+function YMD2Date(ymd) {
+  return Date.UTC(parseInt(ymd.slice(0, 4)),  // year
+                  parseInt(ymd.slice(4, 6)) - 1,  // month
+                  parseInt(ymd.slice(6, 8)));  // day
 }
 
 class Database {
@@ -46,7 +54,9 @@ class Database {
     this.name = name;
     this.body = body;
     this.jsonPath = `data/${name}/${body}.json`;
-    this.data = undefined;
+
+    this.data;
+    this.loaded = false;
 
     // Get raw JSON content
     let self = this;
@@ -56,6 +66,7 @@ class Database {
     xhr.onload = function (e) {
       if (this.status == 200) {
           self.data = this.response;
+          self.loaded = true;
       }
     };
     xhr.send();
@@ -67,61 +78,62 @@ class Interpolator {
     this.body = body;
 
     this.database = new Database('lite', body);
+    this.valid = false;
 
-    this.lon1 = undefined;
-    this.lon2 = undefined;
-    this.date1 = undefined;
-    this.date2 = undefined;
-    this.span = undefined;
+    this.lon1;
+    this.lon2;
+    this.date1;
+    this.date2;
+    this.span;
   }
 
   updateDates(date) {
-    if (this.database.data === undefined) {
+    if (!this.database.loaded) {
+      this.valid = false;
       return;
     }
-    let daysPrev = 1;
-    while (!this.database.data.hasOwnProperty(date2Str(date, daysPrev))) {
-      daysPrev -= 1
-      test.textContent = daysPrev;
-    }
-    return 0;
-/*
-    let row1 = this.database.rows[nextIndex - 1];
-    this.lon1 = parseFloat(row1.split(',')[1]);  // Ecliptic longitude
-    this.date1 = Date.UTC(
-      parseInt(row1.slice(0, 4)),  // year
-      parseInt(row1.slice(5, 7)) - 1,  // month
-      parseInt(row1.slice(8, 10))  // day
-    );
 
-    let row2 = this.database.rows[nextIndex];
-    this.lon2 = parseFloat(row2.split(',')[1]);  // Ecliptic longitude
-    this.date2 = Date.UTC(
-      parseInt(row2.slice(0, 4)),  // year
-      parseInt(row2.slice(5, 7)) - 1,  // month
-      parseInt(row2.slice(8, 10))  // day
-    );
+    let index;
+
+    this.date1 = undefined;
+    for (let days=0; days<60; days++) {
+      index = date2YMD(date - days * 86400000);
+      if (this.database.data.hasOwnProperty(index)) {
+        this.lon1 = this.database.data[index];
+        this.date1 = YMD2Date(index);
+        break;
+      }
+    }
+    this.date2 = undefined;
+    for (let days=1; days<60; days++) {
+      index = date2YMD(date + days * 86400000);
+      if (this.database.data.hasOwnProperty(index)) {
+        this.lon2 = this.database.data[index];
+        this.date2 = YMD2Date(index);
+        break;
+      }
+    }
 
     if (this.lon1 - this.lon2 > Math.PI) {
       this.lon2 += 2 * Math.PI;
     } else if (this.lon2 - this.lon1 > Math.PI) {
       this.lon1 += 2 * Math.PI;
     }
-
     this.span = this.date2 - this.date1;
-*/
+
+    this.valid = !(this.date1 === undefined || this.date2 === undefined);
   }
 
   longitude(date) {
-    this.updateDates(date);
-    return 0;
-/*
-    if (this.date1 === undefined || date < this.date1 || date > this.date2) {
+    if (!this.valid || date < this.date1 || date > this.date2) {
       this.updateDates(date);
+      if (!this.valid) {
+        return;
+      }
     }
     let x = (date - this.date1) / this.span;
+    if (this.body == 'sun') { test.textContent = x; }
     return -(this.lon1 * (1 - x) + this.lon2 * x);
-*/
   }
 }
 
@@ -175,7 +187,7 @@ function drawEarth(date, sunLongitude) {
 
 let offset = 0;
 let speed = 1;
-let date = undefined;
+let date;
 
 function setSpeed(x) {
   return function() {
@@ -213,7 +225,6 @@ function updateClock() {
   sunLongitude = sun.longitude(date);
 
   drawHand(plColors.sun, sunLongitude);
-/*
   if (Math.abs(speed) < 10000000) {
     drawHand(plColors.moon, moon.longitude(date));
   }
@@ -230,9 +241,9 @@ function updateClock() {
   drawHand(plColors.iris, iris.longitude(date));
   drawHand(plColors.ceres, ceres.longitude(date));
   drawHand(plColors.pallas, pallas.longitude(date));
-*/
+
   drawEarth(date, sunLongitude);
 }
 
 updateClock();
-setInterval(updateClock, 1000 / 10);
+setInterval(updateClock, 1000 / 50);
