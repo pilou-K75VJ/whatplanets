@@ -4,7 +4,6 @@ ctx.translate(320, 320);  // Translate to center
 const txtDate = document.querySelector('#date');
 const earth = document.querySelector("#earth");
 const test = document.querySelector('#test');
-test.textContent = '...';
 
 const b7 = document.querySelector('#b7');
 const b6 = document.querySelector('#b6');
@@ -35,47 +34,37 @@ const plColors = {
   pallas: '#404040'
 };
 
+function date2Str(date, offsetDays = 0) {
+  let d = new Date(date + offsetDays * 86400000);
+  return d.getUTCFullYear().toString().padStart(4, '0')
+         + (d.getUTCMonth() + 1).toString().padStart(2, '0')
+         + d.getUTCDate().toString().padStart(2, '0');
+}
+
 class Database {
   constructor(name, body) {
     this.name = name;
     this.body = body;
-    this.csvPath = `data/${name}/${body}.csv`;
+    this.jsonPath = `data/${name}/${body}.json`;
+    this.data = undefined;
 
-    // Get raw CSV content
-    let txt = undefined;
-    let rawFile = new XMLHttpRequest();
-    rawFile.open('GET', this.csvPath, false);
-    rawFile.onreadystatechange = function () {
-      if (rawFile.readyState === 4) {
-        if (rawFile.status === 200 || rawFile.status == 0) {
-          txt = rawFile.responseText;
-        }
+    // Get raw JSON content
+    let self = this;
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', this.jsonPath, true);
+    xhr.responseType = 'json';
+    xhr.onload = function (e) {
+      if (this.status == 200) {
+          self.data = this.response;
       }
-    }
-    rawFile.send(null);
-
-    //Extract rows
-    this.rows = txt.split('\n');
+    };
+    xhr.send();
   }
 }
 
 class Interpolator {
   constructor(body) {
     this.body = body;
-
-    // Get index of databases
-    let txt = undefined;
-    let rawFile = new XMLHttpRequest();
-    rawFile.open('GET', `data/full/${body}.index.csv`, false);
-    rawFile.onreadystatechange = function () {
-      if (rawFile.readyState === 4) {
-        if (rawFile.status === 200 || rawFile.status == 0) {
-          txt = rawFile.responseText;
-        }
-      }
-    }
-    rawFile.send(null);
-    this.index = txt.split('\n');
 
     this.database = new Database('lite', body);
 
@@ -87,18 +76,16 @@ class Interpolator {
   }
 
   updateDates(date) {
-    let nextIndex = -1;
-
-    this.database.rows.some(function(row) {
-      nextIndex += 1;
-      if (nextIndex === 0) { return false; }
-      return Date.UTC(
-        parseInt(row.slice(0, 4)),  // year
-        parseInt(row.slice(5, 7)) - 1,  // month
-        parseInt(row.slice(8, 10))  // day
-      ) > date;  // Exit loop when (row date > required date)
-    });
-
+    if (this.database.data === undefined) {
+      return;
+    }
+    let daysPrev = 1;
+    while (!this.database.data.hasOwnProperty(date2Str(date, daysPrev))) {
+      daysPrev -= 1
+      test.textContent = daysPrev;
+    }
+    return 0;
+/*
     let row1 = this.database.rows[nextIndex - 1];
     this.lon1 = parseFloat(row1.split(',')[1]);  // Ecliptic longitude
     this.date1 = Date.UTC(
@@ -122,14 +109,19 @@ class Interpolator {
     }
 
     this.span = this.date2 - this.date1;
+*/
   }
 
   longitude(date) {
-    if (this.date1 == undefined || date < this.date1 || date > this.date2) {
+    this.updateDates(date);
+    return 0;
+/*
+    if (this.date1 === undefined || date < this.date1 || date > this.date2) {
       this.updateDates(date);
     }
     let x = (date - this.date1) / this.span;
     return -(this.lon1 * (1 - x) + this.lon2 * x);
+*/
   }
 }
 
@@ -170,11 +162,11 @@ function drawDisk(color, radius, alpha = 1) {
 function drawEarth(date, sunLongitude) {
   ctx.globalAlpha = 1;
 
-  let UTCDate = new Date(date);
+  let d = new Date(date);
   let angle = sunLongitude - Math.PI * (1 + (
-                3600 * UTCDate.getUTCHours()
-                + 60 * UTCDate.getUTCMinutes()
-                + UTCDate.getUTCSeconds()
+                3600 * d.getUTCHours()
+                + 60 * d.getUTCMinutes()
+                + d.getUTCSeconds()
               ) / 43200);
   ctx.rotate(angle);
   ctx.drawImage(earth, -150, -150, 300, 300);
@@ -221,6 +213,7 @@ function updateClock() {
   sunLongitude = sun.longitude(date);
 
   drawHand(plColors.sun, sunLongitude);
+/*
   if (Math.abs(speed) < 10000000) {
     drawHand(plColors.moon, moon.longitude(date));
   }
@@ -237,9 +230,9 @@ function updateClock() {
   drawHand(plColors.iris, iris.longitude(date));
   drawHand(plColors.ceres, ceres.longitude(date));
   drawHand(plColors.pallas, pallas.longitude(date));
-
+*/
   drawEarth(date, sunLongitude);
 }
 
 updateClock();
-setInterval(updateClock, 1000 / 30);
+setInterval(updateClock, 1000 / 10);
