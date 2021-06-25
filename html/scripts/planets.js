@@ -57,8 +57,11 @@ class Database {
 
     this.data;
     this.loaded = false;
+    this.loadData();
+  }
 
-    // Get raw JSON content
+  loadData() {
+    // Get JSON content
     let self = this;
     const xhr = new XMLHttpRequest();
     xhr.open('GET', this.jsonPath, true);
@@ -76,9 +79,12 @@ class Database {
 class Interpolator {
   constructor(body) {
     this.body = body;
-
-    this.database = new Database('lite', body);
+    this.liteDatabase = new Database('lite', body);
     this.valid = false;
+
+    this.index;
+    this.loaded = false;
+    this.loadIndex();
 
     this.lon1;
     this.lon2;
@@ -87,29 +93,44 @@ class Interpolator {
     this.span;
   }
 
+  loadIndex() {
+    // Get JSON content
+    let self = this;
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'data/full/index.json', true);
+    xhr.responseType = 'json';
+    xhr.onload = function (e) {
+      if (this.status == 200) {
+          self.index = this.response;
+          self.loaded = true;
+      }
+    };
+    xhr.send();
+  }
+
   updateDates(date) {
-    if (!this.database.loaded) {
+    if (!this.liteDatabase.loaded) {
       this.valid = false;
       return;
     }
 
-    let index;
+    let d;
 
     this.date1 = undefined;
     for (let days=0; days<60; days++) {
-      index = date2YMD(date - days * 86400000);
-      if (this.database.data.hasOwnProperty(index)) {
-        this.lon1 = this.database.data[index];
-        this.date1 = YMD2Date(index);
+      d = date2YMD(date - days * 86400000);
+      if (this.liteDatabase.data.hasOwnProperty(d)) {
+        this.lon1 = this.liteDatabase.data[d];
+        this.date1 = YMD2Date(d);
         break;
       }
     }
     this.date2 = undefined;
     for (let days=1; days<60; days++) {
-      index = date2YMD(date + days * 86400000);
-      if (this.database.data.hasOwnProperty(index)) {
-        this.lon2 = this.database.data[index];
-        this.date2 = YMD2Date(index);
+      d = date2YMD(date + days * 86400000);
+      if (this.liteDatabase.data.hasOwnProperty(d)) {
+        this.lon2 = this.liteDatabase.data[d];
+        this.date2 = YMD2Date(d);
         break;
       }
     }
@@ -186,12 +207,20 @@ function drawEarth(date, sunLongitude) {
 
 let offset = 0;
 let speed = 1;
+let targetSpeed = 1;
 let date;
+
+function updateSpeed() {
+  if (Math.abs(targetSpeed - speed) / targetSpeed < 0.0001) {
+    return ;
+  }
+  speed += (targetSpeed - speed) / 5;
+  offset = date - speed * Date.now();
+}
 
 function setSpeed(x) {
   return function() {
-    speed = x;
-    offset = date - speed * Date.now();
+    targetSpeed = x;
   };
 }
 
@@ -206,7 +235,7 @@ B6.onclick = setSpeed(1000000);
 B7.onclick = setSpeed(10000000);
 
 txtDate.oninput = function() {
-  speed = 1;
+  targetSpeed = 1;
   offset = txtDate.valueAsNumber - speed * Date.now();
 };
 BNow.onclick = function() {
@@ -215,6 +244,7 @@ BNow.onclick = function() {
 
 function updateClock() {
   date = offset + speed * Date.now();
+  updateSpeed();
   txtDate.valueAsNumber = date;
 
   ctx.clearRect(-320, -320, 640, 640);
@@ -224,7 +254,7 @@ function updateClock() {
   sunLongitude = sun.longitude(date);
 
   drawHand(plColors.sun, sunLongitude);
-  if (Math.abs(speed) < 10000000) {
+  if (Math.abs(speed) < 5000000) {
     drawHand(plColors.moon, moon.longitude(date));
   }
 

@@ -20,6 +20,7 @@ class Horizons:
             self.config = json.load(f_config)
 
         self.children = None
+        self.children_index = None
 
         # Compute time cover
         time_cover = self.config['time_cover']
@@ -39,9 +40,10 @@ class Horizons:
 
     def _make_children(self, time_cover, time_range):
         '''
-        Wrapper for hierarchical data
+        Prepare hierarchical data structure
         '''
         self.children = list()
+        self.children_index = dict()
         for start in np.arange(1850, 2250, time_range):
             end = start + time_range - 1
             new_config = self.config.copy()
@@ -103,8 +105,10 @@ class Horizons:
 
         # Wrapper for hierarchical data
         if self.children is not None:
+            self.children_index[body] = list()
             for c in self.children:
-                c.parse_data(body=body)
+                if c.parse_data(body=body):
+                    self.children_index[body].append(c.config['time_cover'])
             return
 
         path = lambda ext: os.path.join(self.data_dir, '{}.{}'.format(body, ext))
@@ -116,7 +120,7 @@ class Horizons:
                     break
             else:
                 print('**\n** Not created: {}\n**'.format(path('csv')))
-                return
+                return False
 
             with open(path('tmp.csv'), 'w') as f_csv:
                 f_csv.write("timestamp,daylight,moon,ecliptic_longitude,ecliptic_latitude,\n")
@@ -144,6 +148,8 @@ class Horizons:
         os.remove(path('tmp.txt'))
         os.remove(path('tmp.csv'))
 
+        return True
+
     def main(self, bodies=None):
         if bodies is None:
             bodies = self.bodies
@@ -155,6 +161,11 @@ class Horizons:
             self.parse_data(body)
             if 'high_frequency' in self.data_dir:
                 self._main_dt_max(body)
+
+        if self.children is not None:
+            with open(os.path.join(self.data_dir, 'index.json'), 'w') as f_index:
+                json.dump(self.children_index, f_index, indent=2)
+                f_index.write("\n")
 
     def _dt_max(self, body, err=pi / 180.):
         """
