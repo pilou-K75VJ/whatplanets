@@ -1,16 +1,13 @@
 html {
-  background-color: #205080;
+  background-color: #778899;
 }
 
 body {
-  background-color: #BFDFFF;
-  border: solid black;
-  border-width: 0 3px 3px 3px;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
+  background-color: #778899;
   margin: 0 auto;
-  padding: 20px;
-  width: 800px;
+  padding: 30px;
+  width: 90%;;
+  min-height: 100vh;
 }
 
 p {
@@ -27,11 +24,7 @@ img {
 #site-title {
   border: solid black;
   border-width: 5px;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
-  font-family: "Fredoka One", cursive;
+  font-family: "Arial";
   font-size: 60px;
   margin: 0;
   text-align: center;
