@@ -50,25 +50,35 @@ function YMD2Date(ymd) {
 }
 
 class Database {
-  constructor(name, body) {
+  constructor(name, body, load = false) {
     this.name = name;
     this.body = body;
     this.jsonPath = `data/${name}/${body}.json`;
 
-    this.data;
+    this.content;
+    this.requested = false;
     this.loaded = false;
-    this.loadData();
+    if (load) { this.loadData(); }
+  }
+
+  get data() {
+    if (!this.requested) { this.loadData(); }
+    if (!this.loaded) { return; }
+    return this.content;
   }
 
   loadData() {
+    if (this.requested) { return; }
+    this.requested = true;
+
     // Get JSON content
-    let self = this;
     const xhr = new XMLHttpRequest();
     xhr.open('GET', this.jsonPath, true);
     xhr.responseType = 'json';
-    xhr.onload = function (e) {
+    let self = this;
+    xhr.onload = function(e) {
       if (this.status == 200) {
-          self.data = this.response;
+          self.content = this.response;
           self.loaded = true;
       }
     };
@@ -79,13 +89,11 @@ class Database {
 class Interpolator {
   constructor(body) {
     this.body = body;
-    this.liteDatabase = new Database('lite', body);
+    this.DB = {'lite': new Database('lite', body, true)};
+    this.current = 'lite';
+    this.loadDB();
+
     this.valid = false;
-
-    this.index;
-    this.loaded = false;
-    this.loadIndex();
-
     this.lon1;
     this.lon2;
     this.date1;
@@ -93,23 +101,36 @@ class Interpolator {
     this.span;
   }
 
-  loadIndex() {
-    // Get JSON content
-    let self = this;
+  loadDB() {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'data/full/index.json', true);
     xhr.responseType = 'json';
-    xhr.onload = function (e) {
+    let self = this;
+    xhr.onload = function(e) {
       if (this.status == 200) {
-          self.index = this.response;
-          self.loaded = true;
+          this.response[self.body].forEach((name) => {
+            self.DB[name] = new Database(`full/${name}`, self.body, false);
+          })
       }
     };
     xhr.send();
   }
 
+  changeCurrentDatabase(date) {
+    let year = (new Date(date)).getUTCFullYear();
+    let current;
+    Object.keys(this.DB).some((name) => {
+      if (name == 'lite') { return false; }
+      current = name;
+      let [start, stop] = name.split('-');
+      return (parseInt(start) < year && parseInt(stop) > year);
+    })
+    this.current = name;
+  }
+
   updateDates(date) {
-    if (!this.liteDatabase.loaded) {
+    if (!this.DB[this.current].loaded) {
+      this.DB[this.current].loadData();
       this.valid = false;
       return;
     }
@@ -119,21 +140,18 @@ class Interpolator {
     this.date1 = undefined;
     for (let days=0; days<60; days++) {
       d = date2YMD(date - days * 86400000);
-      if (this.liteDatabase.data.hasOwnProperty(d)) {
-        this.lon1 = this.liteDatabase.data[d];
-        this.date1 = YMD2Date(d);
-        break;
-      }
+      if (this.DB[this.current].data.hasOwnProperty(d)) { break; }
     }
+    this.lon1 = this.DB[this.current].data[d];
+    this.date1 = YMD2Date(d);
+
     this.date2 = undefined;
     for (let days=1; days<60; days++) {
       d = date2YMD(date + days * 86400000);
-      if (this.liteDatabase.data.hasOwnProperty(d)) {
-        this.lon2 = this.liteDatabase.data[d];
-        this.date2 = YMD2Date(d);
-        break;
-      }
+      if (this.DB[this.current].data.hasOwnProperty(d)) { break; }
     }
+    this.lon2 = this.DB[this.current].data[d];
+    this.date2 = YMD2Date(d);
 
     if (this.lon1 - this.lon2 > Math.PI) {
       this.lon2 += 2 * Math.PI;
@@ -148,9 +166,6 @@ class Interpolator {
   longitude(date) {
     if (!this.valid || date < this.date1 || date > this.date2) {
       this.updateDates(date);
-      if (!this.valid) {
-        return;
-      }
     }
     let x = (date - this.date1) / this.span;
     return -(this.lon1 * (1 - x) + this.lon2 * x);
@@ -211,17 +226,17 @@ let targetSpeed = 1;
 let date;
 
 function updateSpeed() {
-  if (Math.abs(targetSpeed - speed) / targetSpeed < 0.0001) {
-    return ;
+  if (Math.abs((targetSpeed - speed) / targetSpeed) < 0.001) {
+    speed = targetSpeed;
+  } else {
+    speed += (targetSpeed - speed) / 5;
   }
-  speed += (targetSpeed - speed) / 5;
+
   offset = date - speed * Date.now();
 }
 
 function setSpeed(x) {
-  return function() {
-    targetSpeed = x;
-  };
+  return () => { targetSpeed = x; };
 }
 
 b7.onclick = setSpeed(-10000000);
@@ -234,13 +249,11 @@ B5.onclick = setSpeed(100000);
 B6.onclick = setSpeed(1000000);
 B7.onclick = setSpeed(10000000);
 
-txtDate.oninput = function() {
+txtDate.oninput = () => {
   targetSpeed = 1;
   offset = txtDate.valueAsNumber - speed * Date.now();
 };
-BNow.onclick = function() {
-  offset = Date.now() * (1 - speed);
-};
+BNow.onclick = () => { offset = Date.now() * (1 - speed); };
 
 function updateClock() {
   date = offset + speed * Date.now();

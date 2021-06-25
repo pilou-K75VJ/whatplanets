@@ -2,14 +2,14 @@ let html = document.querySelector('html');
 let body = document.querySelector('body');
 let earthLogo = document.querySelector('#earth-logo');
 
-class bgColors {
-  static lightRed = '#FFBFDF';
-  static darkRed = '#802050';
-  static lightGreen = '#DFFFBF';
-  static darkGreen = '#508020';
-  static lightBlue = '#BFDFFF';
-  static darkBlue = '#205080';
-}
+const bgColors = {
+  'lightRed': '#FFBFDF',
+  'darkRed': '#802050',
+  'lightGreen': '#DFFFBF',
+  'darkGreen': '#508020',
+  'lightBlue': '#BFDFFF',
+  'darkBlue': '#205080'
+};
 
 function rgbToHex(rgbString) {
   let rgb = /rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)/.exec(rgbString);
@@ -33,7 +33,7 @@ earthLogo.onclick = function() {
       html.style.backgroundColor = bgColors.darkBlue;
       body.style.backgroundColor = bgColors.lightBlue;
   }
-}
+};
 
 html.style.backgroundColor = bgColors.darkBlue;
 body.style.backgroundColor = bgColors.lightBlue;
