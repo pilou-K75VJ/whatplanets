@@ -76,7 +76,7 @@ class Database {
     xhr.open('GET', this.jsonPath, true);
     xhr.responseType = 'json';
     let self = this;
-    xhr.onload = function(e) {
+    xhr.onload = function (e) {
       if (this.status == 200) {
           self.content = this.response;
           self.loaded = true;
@@ -92,8 +92,9 @@ class Interpolator {
     this.DB = {'lite': new Database('lite', body, true)};
     this.current = 'lite';
     this.loadDB();
+    this.outOfBounds = false;
+    this.waiting = true;
 
-    this.valid = false;
     this.lon1;
     this.lon2;
     this.date1;
@@ -106,7 +107,7 @@ class Interpolator {
     xhr.open('GET', 'data/full/index.json', true);
     xhr.responseType = 'json';
     let self = this;
-    xhr.onload = function(e) {
+    xhr.onload = function (e) {
       if (this.status == 200) {
           this.response[self.body].forEach((name) => {
             self.DB[name] = new Database(`full/${name}`, self.body, false);
@@ -119,19 +120,24 @@ class Interpolator {
   changeCurrentDatabase(date) {
     let year = (new Date(date)).getUTCFullYear();
     let current;
-    Object.keys(this.DB).some((name) => {
-      if (name == 'lite') { return false; }
-      current = name;
-      let [start, stop] = name.split('-');
-      return (parseInt(start) < year && parseInt(stop) > year);
-    })
-    this.current = name;
+    if (
+      Object.keys(this.DB).some((name) => {
+        if (name == 'lite') { return false; }
+        current = name;
+        let [start, stop] = name.split('-');
+        return (parseInt(start) <= year && parseInt(stop) >= year);
+      })
+    ) {
+      this.current = current;
+    } else {
+      this.current = undefined;
+    }
   }
 
   updateDates(date) {
-    if (!this.DB[this.current].loaded) {
+    this.waiting = !this.DB[this.current].loaded;
+    if (this.waiting) {
       this.DB[this.current].loadData();
-      this.valid = false;
       return;
     }
 
@@ -140,18 +146,22 @@ class Interpolator {
     this.date1 = undefined;
     for (let days=0; days<60; days++) {
       d = date2YMD(date - days * 86400000);
-      if (this.DB[this.current].data.hasOwnProperty(d)) { break; }
+      if (this.DB[this.current].data.hasOwnProperty(d)) {
+        this.lon1 = this.DB[this.current].data[d];
+        this.date1 = YMD2Date(d);
+        break;
+      }
     }
-    this.lon1 = this.DB[this.current].data[d];
-    this.date1 = YMD2Date(d);
 
     this.date2 = undefined;
     for (let days=1; days<60; days++) {
       d = date2YMD(date + days * 86400000);
-      if (this.DB[this.current].data.hasOwnProperty(d)) { break; }
+      if (this.DB[this.current].data.hasOwnProperty(d)) {
+        this.lon2 = this.DB[this.current].data[d];
+        this.date2 = YMD2Date(d);
+        break;
+      }
     }
-    this.lon2 = this.DB[this.current].data[d];
-    this.date2 = YMD2Date(d);
 
     if (this.lon1 - this.lon2 > Math.PI) {
       this.lon2 += 2 * Math.PI;
@@ -160,11 +170,18 @@ class Interpolator {
     }
     this.span = this.date2 - this.date1;
 
-    this.valid = !(this.date1 === undefined || this.date2 === undefined);
+    this.outOfBounds = (this.date1 === undefined || this.date2 === undefined);
+    if (this.outOfBounds) {
+      this.changeCurrentDatabase(date);
+      return;
+    }
   }
 
   longitude(date) {
-    if (!this.valid || date < this.date1 || date > this.date2) {
+    if (this.waiting || this.outOfBounds) {
+      this.updateDates(date);
+      return;
+    } else if (date < this.date1 || date > this.date2) {
       this.updateDates(date);
     }
     let x = (date - this.date1) / this.span;
