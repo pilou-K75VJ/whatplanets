@@ -3,19 +3,18 @@ ctx.translate(320, 320);  // Translate to center
 
 const txtDate = document.querySelector('#date');
 const earth = document.querySelector("#earth");
-// const test = document.querySelector('#test');
 
 // Buttons
-const b7 = document.querySelector('#b7');
-const b6 = document.querySelector('#b6');
-const b5 = document.querySelector('#b5');
-const b4 = document.querySelector('#b4');
-const B0 = document.querySelector('#B0');
-const B4 = document.querySelector('#B4');
-const B5 = document.querySelector('#B5');
-const B6 = document.querySelector('#B6');
-const B7 = document.querySelector('#B7');
-const BNow = document.querySelector('#B-now');
+const b7 = document.querySelector('#backward-7');
+const b6 = document.querySelector('#backward-6');
+const b5 = document.querySelector('#backward-5');
+const b4 = document.querySelector('#backward-4');
+const B0 = document.querySelector('#real-time');
+const B4 = document.querySelector('#forward-4');
+const B5 = document.querySelector('#forward-5');
+const B6 = document.querySelector('#forward-6');
+const B7 = document.querySelector('#forward-7');
+const BNow = document.querySelector('#jump-now');
 
 // Planets
 const plColors = {

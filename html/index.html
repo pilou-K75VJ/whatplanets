@@ -1,70 +1,69 @@
 <!DOCTYPE html>
 <html>
-  <head>
-
-    <meta charset="utf-8">
-    <meta lang="en-US">
-
-    <title>WhatPlanets.com</title>
-    <meta name="author" content="Pierre-Louis Phan">
-    <meta name="description" content="
-      Clock of visible planets, where to find them in the sky : Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn.
-      We see them around us in a single circle, since they are in the same plane as the Earth (the ecliptic plane).
-      The angle on the clock corresponds to the **ecliptic longitude** viewed from Earth.
+<head>
+  
+  <meta charset="utf-8">
+  <meta lang="en-US">
+  
+  <title>WhatPlanets.com</title>
+  <meta name="author" content="Pierre-Louis Phan">
+  <meta name="description" content="
+    Clock of visible planets, where to find them in the sky : Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn.
+    We see them around us in a single circle, since they are in the same plane as the Earth (the ecliptic plane).
+    The angle on the clock corresponds to the **ecliptic longitude** viewed from Earth.
     ">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Montserrat&display=swap" rel="stylesheet">
+  <link href="styles/style.css" rel="stylesheet">
+  
+  <script src="scripts/planets.js" defer></script>
+  <script src="scripts/colors.js" defer></script>
 
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Montserrat&display=swap" rel="stylesheet">
-    <link href="styles/style.css" rel="stylesheet">
+</head>
+<body>
 
-    <script src="scripts/planets.js" defer></script>
-    <script src="scripts/colors.js" defer></script>
+<header>
+  <h1 id="site-title">WhatPlanets.com</h1>
+</header>
 
-  </head>
-  <body>
+<main>
+  
+  <canvas id="planets" width="640" height="640">
+    Clock of visible planets, where to find them in the sky.
+    <img id="earth" src="images/earth.png">
+  </canvas>
+  
+  <button id="backward-7"><<<<br>x 10 000 000</button>
+  <button id="backward-6"><<<br>x 1 000 000</button>
+  <button id="backward-5"><<br>x 100 000</button>
+  <button id="backward-4"><-<br>x 10 000</button>
+  <button id="real-time">REAL TIME<br>x 1</button>
+  <button id="forward-4">-><br>x 10 000</button>
+  <button id="forward-5">><br>x 100 000</button>
+  <button id="forward-6">>><br>x 1 000 000</button>
+  <button id="forward-7">>>><br>x 10 000 000</button>
+  
+  <input type="date" id="date">
+  <button id="jump-now">PRESENT<br>TIME</button>
+  
+  <p>
+    Find the project on
+    <a
+      href="https://github.com/pilou-K75VJ/zodiac-wanderers"
+      target="_blank"
+    >Github</a>
+    .
+  </p>
 
-    <header>
-      <h1 id="site-title">WhatPlanets.com</h1>
-    </header>
+</main>
 
-    <main>
+<footer>
+  <img
+    id="earth-logo"
+    src="images/earth.png"
+  >
+</footer>
 
-    <canvas id="planets" width="640" height="640">
-      Clock of visible planets, where to find them in the sky.
-      <img id="earth" src="images/earth.png">
-    </canvas>
-
-    <button id="b7"><<<<br>x 10 000 000</button>
-    <button id="b6"><<<br>x 1 000 000</button>
-    <button id="b5"><<br>x 100 000</button>
-    <button id="b4"><-<br>x 10 000</button>
-    <button id="B0">REAL TIME<br>x 1</button>
-    <button id="B4">-><br>x 10 000</button>
-    <button id="B5">><br>x 100 000</button>
-    <button id="B6">>><br>x 1 000 000</button>
-    <button id="B7">>>><br>x 10 000 000</button>
-
-    <input type="date" id="date">
-    <button id="B-now">PRESENT<br>TIME</button>
-
-    <p>
-      Find the project on
-      <a
-        href="https://github.com/pilou-K75VJ/zodiac-wanderers"
-        target="_blank"
-      >Github</a>
-      .
-    </p>
-    <p id="test"></p>
-
-    </main>
-
-    <footer>
-    <img
-      id="earth-logo"
-      src="images/earth.png"
-    >
-    </footer>
-
-  </body>
+</body>
 </html>
