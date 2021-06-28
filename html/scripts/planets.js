@@ -1,9 +1,15 @@
 const ctx = document.getElementById('planets').getContext('2d');
-ctx.translate(400, 400);  // Translate to center
 
 const txtDate = document.querySelector('#date');
 const earth = document.querySelector("#earth");
-// const test = document.querySelector('#test');
+//const test = document.querySelector('#test');
+//test.textContent = window.innerHeight/1.1;
+
+canvas_size = Math.min(window.innerHeight/1.2, window.innerWidth/1.2)
+ctx.canvas.width = canvas_size;
+ctx.canvas.height = canvas_size;
+ctx.translate(canvas_size/2, canvas_size/2);
+
 
 // Buttons
 const b7 = document.querySelector('#b7');
@@ -180,7 +186,7 @@ function drawEarth(date, sunLongitude) {
                 + d.getUTCSeconds()
               ) / 43200);
   ctx.rotate(angle);
-  ctx.drawImage(earth, -350, -350, 700, 700);
+  ctx.drawImage(earth, -(canvas_size/2-50), -(canvas_size/2-50), canvas_size-100, canvas_size-100);
   ctx.rotate(-angle);
 }
 
@@ -217,8 +223,8 @@ function updateClock() {
   date = offset + speed * Date.now();
   txtDate.valueAsNumber = date;
 
-  ctx.clearRect(-400, -400, 800, 800);
-  drawDisk('black', 400, alpha=0.6);
+  ctx.clearRect(-canvas_size/2, -canvas_size/2, canvas_size, canvas_size);
+  drawDisk('black', canvas_size/2, alpha=0.6);
 
   ctx.lineCap = 'round';
   sunLongitude = sun.longitude(date);
