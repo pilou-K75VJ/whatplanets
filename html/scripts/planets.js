@@ -1,4 +1,6 @@
-const ctx = document.getElementById('planets').getContext('2d');
+(function() {
+
+const ctx = document.querySelector('#planets').getContext('2d');
 ctx.translate(320, 320);  // Translate to center
 
 const txtDate = document.querySelector('#date');
@@ -18,7 +20,7 @@ const B7 = document.querySelector('#forward-7');
 const BNow = document.querySelector('#jump-now');
 
 // Planets
-const plColors = {
+const colors = {
   'sun': '#ffd400',
   'moon': '#f7f7f7',
 
@@ -37,18 +39,17 @@ const plColors = {
 };
 
 let indexDB;
-function loadIndexDB() {
+(function() {
   const xhr = new XMLHttpRequest();
   xhr.open('GET', 'data/full/index.json', true);
   xhr.responseType = 'json';
-  xhr.onload = function (e) {
+  xhr.onload = function(e) {
     if (this.status == 200) {
       indexDB = this.response;
     }
   };
   xhr.send();
-}
-loadIndexDB();
+})();
 
 function date2YMD(date) {
   let d = new Date(date);
@@ -90,7 +91,7 @@ class Database {
     xhr.open('GET', this.jsonPath, true);
     xhr.responseType = 'json';
     let self = this;
-    xhr.onload = function (e) {
+    xhr.onload = function(e) {
       if (this.status == 200) {
         self.content = this.response;
         self.loaded = true;
@@ -104,8 +105,9 @@ class Interpolator {
   constructor(body) {
     this.body = body;
     this.DB = {'lite': new Database('lite', body, true)};
-    this.loadedDB = false;
     this.current = 'lite';
+
+    this.loadedDB = false;
     this.outOfBounds = false;
     this.waiting = true;
 
@@ -276,10 +278,14 @@ B6.onclick = setSpeed(1000000);
 B7.onclick = setSpeed(10000000);
 
 txtDate.oninput = () => {
+  speed = 1;
   targetSpeed = 1;
   offset = txtDate.valueAsNumber - speed * Date.now();
 };
-BNow.onclick = () => { offset = Date.now() * (1 - speed); };
+
+BNow.onclick = () => {
+  offset = Date.now() * (1 - speed);
+};
 
 function updateClock() {
   date = offset + speed * Date.now();
@@ -292,26 +298,28 @@ function updateClock() {
   ctx.lineCap = 'round';
   sunLongitude = sun.longitude(date);
 
-  drawHand(plColors.sun, sunLongitude);
+  drawHand(colors.sun, sunLongitude);
   if (Math.abs(speed) < 5000000) {
-    drawHand(plColors.moon, moon.longitude(date));
+    drawHand(colors.moon, moon.longitude(date));
   }
 
-  drawHand(plColors.mercury, mercury.longitude(date));
-  drawHand(plColors.venus, venus.longitude(date));
-  drawHand(plColors.mars, mars.longitude(date));
-  drawHand(plColors.jupiter, jupiter.longitude(date));
-  drawHand(plColors.saturn, saturn.longitude(date));
-  drawHand(plColors.uranus, neptune.longitude(date));
-  drawHand(plColors.neptune, uranus.longitude(date));
+  drawHand(colors.mercury, mercury.longitude(date));
+  drawHand(colors.venus, venus.longitude(date));
+  drawHand(colors.mars, mars.longitude(date));
+  drawHand(colors.jupiter, jupiter.longitude(date));
+  drawHand(colors.saturn, saturn.longitude(date));
+  drawHand(colors.uranus, neptune.longitude(date));
+  drawHand(colors.neptune, uranus.longitude(date));
 
-  drawHand(plColors.vesta, vesta.longitude(date));
-  drawHand(plColors.iris, iris.longitude(date));
-  drawHand(plColors.ceres, ceres.longitude(date));
-  drawHand(plColors.pallas, pallas.longitude(date));
+  drawHand(colors.vesta, vesta.longitude(date));
+  drawHand(colors.iris, iris.longitude(date));
+  drawHand(colors.ceres, ceres.longitude(date));
+  drawHand(colors.pallas, pallas.longitude(date));
 
   drawEarth(date, sunLongitude);
 }
 
 updateClock();
 setInterval(updateClock, 1000 / 50);
+
+})();
