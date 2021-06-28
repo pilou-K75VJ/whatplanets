@@ -3,6 +3,7 @@ ctx.translate(320, 320);  // Translate to center
 
 const txtDate = document.querySelector('#date');
 const earth = document.querySelector("#earth");
+//const test = document.querySelector("#test");
 
 // Buttons
 const b7 = document.querySelector('#backward-7');
@@ -34,6 +35,20 @@ const plColors = {
   'ceres': '#404040',
   'pallas': '#404040'
 };
+
+let indexDB;
+function loadIndexDB() {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', 'data/full/index.json', true);
+  xhr.responseType = 'json';
+  xhr.onload = function (e) {
+    if (this.status == 200) {
+      indexDB = this.response;
+    }
+  };
+  xhr.send();
+}
+loadIndexDB();
 
 function date2YMD(date) {
   let d = new Date(date);
@@ -77,8 +92,8 @@ class Database {
     let self = this;
     xhr.onload = function (e) {
       if (this.status == 200) {
-          self.content = this.response;
-          self.loaded = true;
+        self.content = this.response;
+        self.loaded = true;
       }
     };
     xhr.send();
@@ -89,8 +104,8 @@ class Interpolator {
   constructor(body) {
     this.body = body;
     this.DB = {'lite': new Database('lite', body, true)};
+    this.loadedDB = false;
     this.current = 'lite';
-    this.loadDB();
     this.outOfBounds = false;
     this.waiting = true;
 
@@ -101,22 +116,17 @@ class Interpolator {
     this.span;
   }
 
-  loadDB() {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'data/full/index.json', true);
-    xhr.responseType = 'json';
-    let self = this;
-    xhr.onload = function (e) {
-      if (this.status == 200) {
-          this.response[self.body].forEach((name) => {
-            self.DB[name] = new Database(`full/${name}`, self.body, false);
-          })
-      }
-    };
-    xhr.send();
-  }
-
   changeCurrentDatabase(date) {
+    if (!this.loadedDB) {
+      if (indexDB === undefined) {
+        this.current = undefined;
+        return;
+      } else {
+        indexDB[this.body].forEach((name) => { this.DB[name] = new Database(`full/${name}`, this.body, false); })
+        this.loadedDB = true;
+      }
+    }
+
     let year = (new Date(date)).getUTCFullYear();
     let current;
     if (
