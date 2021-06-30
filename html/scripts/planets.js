@@ -5,7 +5,6 @@ ctx.translate(320, 320);  // Translate to center
 
 const txtDate = document.querySelector('#date');
 const earth = document.querySelector("#earth");
-//const test = document.querySelector("#test");
 
 // Buttons
 const b7 = document.querySelector('#backward-7');
@@ -57,7 +56,6 @@ function date2YMD(date) {
          + (d.getUTCMonth() + 1).toString().padStart(2, '0')  // month
          + d.getUTCDate().toString().padStart(2, '0');  // day
 }
-
 function YMD2Date(ymd) {
   return Date.UTC(parseInt(ymd.slice(0, 4)),  // year
                   parseInt(ymd.slice(4, 6)) - 1,  // month
@@ -145,7 +143,7 @@ class Interpolator {
     }
   }
 
-  updateDates(date) {
+  updateSpan(date) {
     this.waiting = !this.DB[this.current].loaded;
     if (this.waiting) {
       this.DB[this.current].loadData();
@@ -190,10 +188,10 @@ class Interpolator {
 
   longitude(date) {
     if (this.waiting || this.outOfBounds) {
-      this.updateDates(date);
+      this.updateSpan(date);
       return;
     } else if (date < this.date1 || date > this.date2) {
-      this.updateDates(date);
+      this.updateSpan(date);
     }
     let x = (date - this.date1) / this.span;
     return -(this.lon1 * (1 - x) + this.lon2 * x);
@@ -236,7 +234,6 @@ function drawDisk(color, radius, alpha = 1) {
 
 function drawEarth(date, sunLongitude) {
   ctx.globalAlpha = 1;
-
   let d = new Date(date);
   let angle = sunLongitude - Math.PI * (1 + (
                 3600 * d.getUTCHours()
@@ -249,47 +246,49 @@ function drawEarth(date, sunLongitude) {
 }
 
 let offset = 0;
+let targetOffset = 0;
 let speed = 1;
-let targetSpeed = 1;
 let date;
 
-function updateSpeed() {
-  if (Math.abs((targetSpeed - speed) / targetSpeed) < 0.001) {
-    speed = targetSpeed;
+function updateOffset() {
+  if (offset == targetOffset) {
+    return;
+  } else if (Math.abs((targetOffset - offset) / (date + targetOffset)) < 1E-7) {
+    offset = targetOffset;
   } else {
-    speed += (targetSpeed - speed) / 5;
+    offset += (targetOffset - offset) / 5;
   }
-
-  offset = date - speed * Date.now();
+}
+function setDate(d) {
+  setSpeed(1);
+  switch (d) {
+    case 'now': targetOffset = 0; break;
+    case 'input': targetOffset = txtDate.valueAsNumber - Date.now(); break;
+  }
 }
 
 function setSpeed(x) {
-  return () => { targetSpeed = x; };
-}
-
-b7.onclick = setSpeed(-10000000);
-b6.onclick = setSpeed(-1000000);
-b5.onclick = setSpeed(-100000);
-b4.onclick = setSpeed(-10000);
-B0.onclick = setSpeed(1);
-B4.onclick = setSpeed(10000);
-B5.onclick = setSpeed(100000);
-B6.onclick = setSpeed(1000000);
-B7.onclick = setSpeed(10000000);
-
-txtDate.oninput = () => {
-  speed = 1;
-  targetSpeed = 1;
-  offset = txtDate.valueAsNumber - speed * Date.now();
+  speed = x;
+  offset = date - speed * Date.now();
+  targetOffset = offset;
 };
 
-BNow.onclick = () => {
-  offset = Date.now() * (1 - speed);
-};
+txtDate.oninput = function() { setDate('input'); }
+BNow.onclick = function() { setDate('now'); }
+
+b7.onclick = function() { setSpeed(-10000000); }
+b6.onclick = function() { setSpeed(-1000000); }
+b5.onclick = function() { setSpeed(-100000); }
+b4.onclick = function() { setSpeed(-10000); }
+B0.onclick = function() { setSpeed(1); }
+B4.onclick = function() { setSpeed(10000); }
+B5.onclick = function() { setSpeed(100000); }
+B6.onclick = function() { setSpeed(1000000); }
+B7.onclick = function() { setSpeed(10000000); }
 
 function updateClock() {
-  date = offset + speed * Date.now();
-  updateSpeed();
+  updateOffset();
+  date = speed * Date.now() + offset;
   txtDate.valueAsNumber = date;
 
   ctx.clearRect(-320, -320, 640, 640);
