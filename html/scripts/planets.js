@@ -1,10 +1,13 @@
 (function() {
 
+FPS = 50;
+
 const ctx = document.querySelector('#planets').getContext('2d');
 ctx.translate(320, 320);  // Translate to center
 
 const txtDate = document.querySelector('#date');
 const earth = document.querySelector("#earth");
+const earthBlurred = document.querySelector("#earth-blurred");
 
 // Buttons
 const b7 = document.querySelector('#backward-7');
@@ -215,7 +218,6 @@ const ceres = new Interpolator('ceres');
 const pallas = new Interpolator('pallas');
 
 function drawHand(color, angle) {
-  ctx.globalAlpha = 0.8;
   ctx.strokeStyle = color;
   ctx.lineWidth = 4;
   ctx.beginPath();
@@ -224,16 +226,14 @@ function drawHand(color, angle) {
   ctx.stroke();
 }
 
-function drawDisk(color, radius, alpha = 1) {
-  ctx.globalAlpha = alpha;
+function drawDisk(color, radius) {
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(0, 0, radius, 0, 2 * Math.PI);
   ctx.fill();
 }
 
-function drawEarth(date, sunLongitude) {
-  ctx.globalAlpha = 1;
+function drawEarth(date, sunLongitude, blurred) {
   let d = new Date(date);
   let angle = sunLongitude - Math.PI * (1 + (
                 3600 * d.getUTCHours()
@@ -241,14 +241,20 @@ function drawEarth(date, sunLongitude) {
                 + d.getUTCSeconds()
               ) / 43200);
   ctx.rotate(angle);
-  ctx.drawImage(earth, -150, -150, 300, 300);
+  if (blurred) {
+   ctx.drawImage(earthBlurred, -120, -120, 240, 240);
+  } else {
+   ctx.drawImage(earth, -120, -120, 240, 240);
+  }
   ctx.rotate(-angle);
 }
 
 let offset = 0;
 let targetOffset = 0;
 let speed = 1;
-let date;
+let targetSpeed = 1;
+let date = Date.now();
+let dt;
 
 function updateOffset() {
   if (offset == targetOffset) {
@@ -260,18 +266,29 @@ function updateOffset() {
   }
 }
 function setDate(d) {
-  setSpeed(1);
+  speed = 1;
+  targetSpeed = speed;
+  offset = date - Date.now();
   switch (d) {
     case 'now': targetOffset = 0; break;
     case 'input': targetOffset = txtDate.valueAsNumber - Date.now(); break;
   }
 }
 
-function setSpeed(x) {
-  speed = x;
+function updateSpeed() {
+  if (speed == targetSpeed) {
+    return;
+  } else if (Math.abs((targetSpeed - speed) / targetSpeed) < 1E-3) {
+    speed = targetSpeed;
+  } else {
+    speed += (targetSpeed - speed) / 5;
+  }
   offset = date - speed * Date.now();
   targetOffset = offset;
-};
+}
+function setSpeed(x) {
+  targetSpeed = x;
+}
 
 txtDate.oninput = function() { setDate('input'); }
 BNow.onclick = function() { setDate('now'); }
@@ -287,18 +304,22 @@ B6.onclick = function() { setSpeed(1000000); }
 B7.onclick = function() { setSpeed(10000000); }
 
 function updateClock() {
+  dt = speed * Date.now() + offset - date;
+  date += dt;
   updateOffset();
-  date = speed * Date.now() + offset;
+  updateSpeed();
   txtDate.valueAsNumber = date;
 
   ctx.clearRect(-320, -320, 640, 640);
-  drawDisk('black', 310, alpha=0.6);
+  ctx.globalAlpha = 0.6;
+  drawDisk('black', 310);
 
+  ctx.globalAlpha = 0.8;
   ctx.lineCap = 'round';
   sunLongitude = sun.longitude(date);
 
   drawHand(colors.sun, sunLongitude);
-  if (Math.abs(speed) < 5000000) {
+  if (Math.abs(dt * FPS / 1000) < 5000000) {
     drawHand(colors.moon, moon.longitude(date));
   }
 
@@ -315,10 +336,16 @@ function updateClock() {
   drawHand(colors.ceres, ceres.longitude(date));
   drawHand(colors.pallas, pallas.longitude(date));
 
-  drawEarth(date, sunLongitude);
+  ctx.globalAlpha = 1;
+  if (Math.abs(dt * FPS / 1000) < 500000) {
+    drawEarth(date, sunLongitude, blurred = false);
+  } else {
+//    drawDisk('#100f47', 105);
+    drawEarth(date, sunLongitude, blurred = true);
+  }
 }
 
 updateClock();
-setInterval(updateClock, 1000 / 50);
+setInterval(updateClock, 1000 / FPS);
 
 })();
