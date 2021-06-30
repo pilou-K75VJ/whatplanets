@@ -4,8 +4,8 @@ import json
 import os
 from math import pi
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import requests
 
 from utils import equatorial_to_ecliptic
@@ -26,7 +26,7 @@ class Horizons:
         time_cover = self.config['time_cover']
         time_range = self.config['time_range']
         if time_cover == 'all':
-            self._make_children(time_cover, time_range)
+            self._make_children(time_range)
         elif time_cover == 'today':
             start = datetime.date.today().year - time_range // 2
             end = start + time_range - 1
@@ -38,10 +38,10 @@ class Horizons:
 
         self.bodies = list(self.config['bodies'].keys())
 
-    def _make_children(self, time_cover, time_range):
-        '''
+    def _make_children(self, time_range):
+        """
         Prepare hierarchical data structure
-        '''
+        """
         self.children = list()
         self.children_index = dict()
         for start in np.arange(1850, 2250, time_range):
@@ -57,9 +57,9 @@ class Horizons:
             self.children.append(Horizons(new_data_dir, verbose=self.verbose))
 
     def get_data(self, body):
-        '''
+        """
         Request to Nasa Horizons service
-        '''
+        """
         assert body in self.bodies, "Requested body not in config"
 
         # Wrapper for hierarchical data
@@ -98,9 +98,9 @@ class Horizons:
             print('Created {} (size {} chars).'.format(txt_path, len(response)))
 
     def parse_data(self, body):
-        '''
+        """
         Transform raw response to formatted JSON
-        '''
+        """
         assert body in self.bodies, "Requested body not in config"
 
         # Wrapper for hierarchical data
@@ -111,7 +111,8 @@ class Horizons:
                     self.children_index[body].append(c.config['time_cover'])
             return
 
-        path = lambda ext: os.path.join(self.data_dir, '{}.{}'.format(body, ext))
+        def path(ext):
+            return os.path.join(self.data_dir, '{}.{}'.format(body, ext))
 
         # Transform to CSV
         with open(path('tmp.txt'), 'r') as f_txt:
@@ -174,7 +175,8 @@ class Horizons:
         """
         json_path = os.path.join(self.data_dir, '{}.json'.format(body))
         df = pd.read_json(json_path, typ='series', convert_axes=False, convert_dates=False)
-        df = pd.DataFrame(data={'timestamp': pd.to_datetime(df.index, format='%Y%m%d%H%M'), 'ecliptic_longitude': df.reset_index(drop=True)})
+        df = pd.DataFrame(data={'timestamp': pd.to_datetime(df.index, format='%Y%m%d%H%M'),
+                                'ecliptic_longitude': df.reset_index(drop=True)})
         dt = (df.timestamp.iloc[1] - df.timestamp.iloc[0]).seconds
 
         # Compute 1st and 2nd derivatives
@@ -194,7 +196,7 @@ class Horizons:
 
         print("{}: {:.1f}d / {:.1f}d / {:.1f}d".format(body, dj_max_p, dj_max_v, dj_max_a))
 
-    def _main_dt_max(self, bodies=None, err=pi/180.):
+    def _main_dt_max(self, bodies=None, err=pi / 180.):
         if bodies is None:
             bodies = self.bodies
         elif isinstance(bodies, str):
@@ -212,6 +214,7 @@ class Stars:
     Parses the .dat star database retrieved from http://tdc-www.harvard.edu/catalogs/bsc5.html
     Extracts coordinates and magnitude, converts to ecliptic coordinates in a JSON
     """
+
     def __init__(self, data_dir, verbose=False):
         self.verbose = verbose
 
@@ -231,7 +234,9 @@ class Stars:
         os.system("mv bsc5.dat {}".format(self.data_dir))
 
     def parse_data(self):
-        path = lambda ext: os.path.join(self.data_dir, 'bsc5.{}'.format(ext))
+        def path(ext):
+            return os.path.join(self.data_dir, 'bsc5.{}'.format(ext))
+
         with open(path('dat'), 'r') as f_dat:
             data = {key: list() for key in ['RA', 'Dec', 'magnitude']}
             for line in f_dat:
@@ -252,7 +257,7 @@ class Stars:
         df = pd.DataFrame(data).sort_values('magnitude').reset_index(drop=True)
         df['ecliptic_longitude'], df['ecliptic_latitude'] = equatorial_to_ecliptic(df['RA'], df['Dec'])
         for k, v in self.config['rounding'].items():
-          df[k] = df[k].round(v)
+            df[k] = df[k].round(v)
 
         df = df.drop(['RA', 'Dec'], axis='columns')
 

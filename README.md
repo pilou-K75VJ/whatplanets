@@ -9,5 +9,5 @@ The coordinates come from [NASA JPL Horizons](https://ssd.jpl.nasa.gov/horizons_
 which provides custom ephemerides.
 
 - [`data.py`](data.py):
-    - uses the config file [`data/config.json`](data/data_config.json)
-    - creates a parsed CSV file per body, in [`data`](data)
+    - uses the config files `data/DATABASE_NAME/config.json`
+    - creates a JSON file per body, in [`data`](html/data)
