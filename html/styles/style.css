@@ -1,55 +1,112 @@
-html {
-  background-color: #205080;
+html, body {
+  margin: 0;
+  height: 100%;
 }
 
 body {
-  background-color: #BFDFFF;
-  border: solid black;
-  border-width: 0 3px 3px 3px;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
-  margin: 0 auto;
   padding: 20px;
-  width: 800px;
-}
 
-p {
+  background-color: #BFDFFF;
   font-family: "Montserrat", sans-serif;
   font-size: 14px;
 }
 
-img {
-  display: block;
-  margin: 0 auto;
-  width: 100px;
-}
-
 #site-title {
+  width: 600px;
+  margin: 0 auto;
+
+  font-size: 60px;
+  font-family: "Fredoka One", cursive;
+  text-align: center;
+
   border: solid black;
   border-width: 5px;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
-  font-family: "Fredoka One", cursive;
-  font-size: 60px;
-  margin: 0;
+}
+
+main {
+  display: flex;
+  flex-direction: row;
+
+  padding: 50px 20px;
+}
+
+#clock {
+  flex: 2;
+
+  height: 100%;
+  width: 100%;
+}
+
+#controls {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+}
+
+#controls #speed-buttons{
+  flex: 2;
+
+  display: flex;
+  flex-direction: column;
+}
+
+#controls #speed-buttons div{
+  flex: 1;
+
+  display: flex;
+  flex-direction: row;
+}
+
+#controls #speed-buttons div button{
+  flex: 1;
+}
+
+#controls #jump{
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+}
+
+#controls #jump #jump-date{
+  flex: 1;
+
   text-align: center;
 }
 
-#planets {
-  display: block;
-  margin: 5px auto;
+#controls #jump #jump-now{
+  flex: 1;
 }
 
-#date {
-  display: block;
-  font-family: "Montserrat", sans-serif;
-  font-size: 40px;
-  margin: 5px auto;
+#controls #checkboxes{
+  flex: 4;
+
+  display: flex;
+  flex-direction: row;
+
+  font-size: 10;
 }
 
-#B-now {
-  display: block;
-  margin: 5px auto;
+#controls #checkboxes div{
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#controls #checkboxes div label{
+  font-size: 14;
+  font-weight: bold;
+}
+
+#controls #checkboxes div input{
+  display: flex;
+  flex-direction: column;
 }

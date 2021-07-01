@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
 
@@ -18,7 +17,6 @@
   <link href="styles/style.css" rel="stylesheet">
 
   <script src="scripts/planets.js" defer></script>
-  <script src="scripts/colors.js" defer></script>
 
 </head>
 <body>
@@ -29,43 +27,79 @@
 
 <main>
 
-  <canvas id="planets" width="640" height="640">
+  <canvas id="clock" width="640" height="640">
     Clock of visible planets, where to find them in the sky.
     <img id="earth" src="images/earth.png">
     <img id="earth-blurred" src="images/earth_blurred.png">
   </canvas>
 
-  <button id="backward-7"><<<<br>x 10 000 000</button>
-  <button id="backward-6"><<<br>x 1 000 000</button>
-  <button id="backward-5"><<br>x 100 000</button>
-  <button id="backward-4"><-<br>x 10 000</button>
-  <button id="real-time">REAL TIME<br>x 1</button>
-  <button id="forward-4">-><br>x 10 000</button>
-  <button id="forward-5">><br>x 100 000</button>
-  <button id="forward-6">>><br>x 1 000 000</button>
-  <button id="forward-7">>>><br>x 10 000 000</button>
+  <div id="controls">
 
-  <input type="date" id="date">
-  <button id="jump-now">PRESENT<br>TIME</button>
+    <div id="speed-buttons">
+      <div>
+        <button id="f0">[x]</button>
+      </div>
+      <div>
+        <button id="b4">[&lt;]</button>
+        <button id="f4">[&gt;]</button>
+      </div>
+      <div>
+        <button id="b5">[&lt;&lt;]</button>
+        <button id="f5">[&gt;&gt;]</button>
+      </div>
+      <div>
+        <button id="b6">[&lt;&lt;&lt;]</button>
+        <button id="f6">[&gt;&gt;&gt;]</button>
+      </div>
+      <div>
+        <button id="b7">[&lt;&lt;&lt;&lt;]</button>
+        <button id="f7">[&gt;&gt;&gt;&gt;]</button>
+      </div>
+    </div>
 
-  <p>
-    Find the project on
-    <a
-      href="https://github.com/pilou-K75VJ/zodiac-wanderers"
-      target="_blank"
-    >Github</a>
-    .
-  </p>
-<!--  <p id="test"></p>-->
+    <div id="jump">
+      <input id="jump-date" type="date">
+      <button id="jump-now">PRESENT<br>TIME</button>
+    </div>
+
+    <div id="checkboxes">
+      <div>
+        <label></label>
+        <input type="checkbox"> Sun
+        <input type="checkbox"> Moon
+        <input type="checkbox"> Earth
+      </div>
+      <div>
+        <label>Planets</label>
+        <input type="checkbox"> Mercury
+        <input type="checkbox"> Venus
+        <input type="checkbox"> Mars
+        <input type="checkbox"> Jupiter
+        <input type="checkbox"> Saturn
+        <input type="checkbox"> Uranus
+        <input type="checkbox"> Neptune
+      </div>
+      <div>
+        <label>Asteroids</label>
+        <input type="checkbox"> Vesta
+        <input type="checkbox"> Iris
+        <input type="checkbox"> Ceres
+        <input type="checkbox"> Pallas
+      </div>
+    </div>
+
+  </div>
 
 </main>
 
 <footer>
-  <img
-    id="earth-logo"
-    src="images/earth.png"
-  >
+  <p>
+    Find the project on
+    <a href="https://github.com/pilou-K75VJ/zodiac-wanderers" target="_blank">Github</a>
+    .
+  </p>
 </footer>
+
 
 </body>
 </html>

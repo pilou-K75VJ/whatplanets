@@ -1,27 +1,30 @@
 (function() {
 
-FPS = 50;
-
-const ctx = document.querySelector('#planets').getContext('2d');
+// Canvas
+const ctx = document.querySelector('#clock').getContext('2d');
 ctx.translate(320, 320);  // Translate to center
 
-const txtDate = document.querySelector('#date');
-const earth = document.querySelector("#earth");
-const earthBlurred = document.querySelector("#earth-blurred");
+// Images
+const earth = document.querySelector("#clock #earth");
+const earthBlurred = document.querySelector("#clock #earth-blurred");
 
-// Buttons
-const b7 = document.querySelector('#backward-7');
-const b6 = document.querySelector('#backward-6');
-const b5 = document.querySelector('#backward-5');
-const b4 = document.querySelector('#backward-4');
-const B0 = document.querySelector('#real-time');
-const B4 = document.querySelector('#forward-4');
-const B5 = document.querySelector('#forward-5');
-const B6 = document.querySelector('#forward-6');
-const B7 = document.querySelector('#forward-7');
-const BNow = document.querySelector('#jump-now');
+// Speed buttons
+const b7 = document.querySelector('#speed-buttons #b7');
+const b6 = document.querySelector('#speed-buttons #b6');
+const b5 = document.querySelector('#speed-buttons #b5');
+const b4 = document.querySelector('#speed-buttons #b4');
+const f0 = document.querySelector('#speed-buttons #f0');
+const f4 = document.querySelector('#speed-buttons #f4');
+const f5 = document.querySelector('#speed-buttons #f5');
+const f6 = document.querySelector('#speed-buttons #f6');
+const f7 = document.querySelector('#speed-buttons #f7');
 
-// Planets
+// Jump
+const jumpDate = document.querySelector('#jump #jump-date');
+const jumpNow = document.querySelector('#jump #jump-now');
+
+FPS = 50;
+
 const colors = {
   'sun': '#ffd400',
   'moon': '#f7f7f7',
@@ -40,6 +43,7 @@ const colors = {
   'pallas': '#404040'
 };
 
+// Load database index
 let indexDB;
 (function() {
   const xhr = new XMLHttpRequest();
@@ -271,7 +275,7 @@ function setDate(d) {
   offset = date - Date.now();
   switch (d) {
     case 'now': targetOffset = 0; break;
-    case 'input': targetOffset = txtDate.valueAsNumber - Date.now(); break;
+    case 'input': targetOffset = jumpDate.valueAsNumber - Date.now(); break;
   }
 }
 
@@ -290,25 +294,25 @@ function setSpeed(x) {
   targetSpeed = x;
 }
 
-txtDate.oninput = function() { setDate('input'); }
-BNow.onclick = function() { setDate('now'); }
+jumpDate.oninput = function() { setDate('input'); }
+jumpNow.onclick = function() { setDate('now'); }
 
-b7.onclick = function() { setSpeed(-10000000); }
-b6.onclick = function() { setSpeed(-1000000); }
-b5.onclick = function() { setSpeed(-100000); }
-b4.onclick = function() { setSpeed(-10000); }
-B0.onclick = function() { setSpeed(1); }
-B4.onclick = function() { setSpeed(10000); }
-B5.onclick = function() { setSpeed(100000); }
-B6.onclick = function() { setSpeed(1000000); }
-B7.onclick = function() { setSpeed(10000000); }
+b7.onclick = function() { setSpeed(-1E7); }
+b6.onclick = function() { setSpeed(-1E6); }
+b5.onclick = function() { setSpeed(-1E5); }
+b4.onclick = function() { setSpeed(-1E4); }
+f0.onclick = function() { setSpeed(1); }
+f4.onclick = function() { setSpeed(1E4); }
+f5.onclick = function() { setSpeed(1E5); }
+f6.onclick = function() { setSpeed(1E6); }
+f7.onclick = function() { setSpeed(1E7); }
 
 function updateClock() {
   dt = speed * Date.now() + offset - date;
   date += dt;
   updateOffset();
   updateSpeed();
-  txtDate.valueAsNumber = date;
+  jumpDate.valueAsNumber = date;
 
   ctx.clearRect(-320, -320, 640, 640);
   ctx.globalAlpha = 0.6;
