@@ -9,19 +9,19 @@ const earth = document.querySelector("#clock #earth");
 const earthBlurred = document.querySelector("#clock #earth-blurred");
 
 // Speed buttons
-const b7 = document.querySelector('#speed-buttons #b7');
-const b6 = document.querySelector('#speed-buttons #b6');
-const b5 = document.querySelector('#speed-buttons #b5');
-const b4 = document.querySelector('#speed-buttons #b4');
-const f0 = document.querySelector('#speed-buttons #f0');
-const f4 = document.querySelector('#speed-buttons #f4');
-const f5 = document.querySelector('#speed-buttons #f5');
-const f6 = document.querySelector('#speed-buttons #f6');
-const f7 = document.querySelector('#speed-buttons #f7');
+const b7 = document.querySelector('#speeds #b7');
+const b6 = document.querySelector('#speeds #b6');
+const b5 = document.querySelector('#speeds #b5');
+const b4 = document.querySelector('#speeds #b4');
+const f0 = document.querySelector('#speeds #f0');
+const f4 = document.querySelector('#speeds #f4');
+const f5 = document.querySelector('#speeds #f5');
+const f6 = document.querySelector('#speeds #f6');
+const f7 = document.querySelector('#speeds #f7');
 
 // Jump
-const jumpDate = document.querySelector('#jump #jump-date');
-const jumpNow = document.querySelector('#jump #jump-now');
+const jumpDate = document.querySelector('#jumps #date');
+const jumpNow = document.querySelector('#jumps #now');
 
 FPS = 50;
 

@@ -22,7 +22,7 @@
 <body>
 
 <header>
-  <h1 id="site-title">WhatPlanets.com</h1>
+  <h1 id="title">WhatPlanets.com</h1>
 </header>
 
 <main>
@@ -35,57 +35,60 @@
 
   <div id="controls">
 
-    <div id="speed-buttons">
-      <div>
-        <button id="f0">[x]</button>
-      </div>
-      <div>
-        <button id="b4">[&lt;]</button>
-        <button id="f4">[&gt;]</button>
-      </div>
-      <div>
-        <button id="b5">[&lt;&lt;]</button>
-        <button id="f5">[&gt;&gt;]</button>
-      </div>
-      <div>
-        <button id="b6">[&lt;&lt;&lt;]</button>
-        <button id="f6">[&gt;&gt;&gt;]</button>
-      </div>
-      <div>
-        <button id="b7">[&lt;&lt;&lt;&lt;]</button>
-        <button id="f7">[&gt;&gt;&gt;&gt;]</button>
-      </div>
+    <div id="jumps">
+      <input id="date" type="date">
+      <button id="now">PRESENT<br>TIME</button>
     </div>
 
-    <div id="jump">
-      <input id="jump-date" type="date">
-      <button id="jump-now">PRESENT<br>TIME</button>
-    </div>
-
-    <div id="checkboxes">
-      <div>
-        <label></label>
-        <input type="checkbox"> Sun
-        <input type="checkbox"> Moon
-        <input type="checkbox"> Earth
-      </div>
-      <div>
-        <label>Planets</label>
+    <div id="toggles">
+      <div id="mercury">
         <input type="checkbox"> Mercury
+      </div>
+      <div id="venus">
         <input type="checkbox"> Venus
+      </div>
+      <div id="moon">
+        <input type="checkbox"> Moon
+      </div>
+      <div id="mars">
         <input type="checkbox"> Mars
+      </div>
+      <div id="jupiter">
         <input type="checkbox"> Jupiter
+      </div>
+      <div id="saturn">
         <input type="checkbox"> Saturn
+      </div>
+      <div id="uranus">
         <input type="checkbox"> Uranus
+      </div>
+      <div id="neptune">
         <input type="checkbox"> Neptune
       </div>
-      <div>
-        <label>Asteroids</label>
+      <div id="vesta">
         <input type="checkbox"> Vesta
+      </div>
+      <div id="iris">
         <input type="checkbox"> Iris
+      </div>
+      <div id="ceres">
         <input type="checkbox"> Ceres
+      </div>
+      <div id="pallas">
         <input type="checkbox"> Pallas
       </div>
+    </div>
+
+    <div id="speeds">
+      <button id="b7">[&lt;&lt;&lt;&lt;]</button>
+      <button id="b6">[&lt;&lt;&lt;]</button>
+      <button id="b5">[&lt;&lt;]</button>
+      <button id="b4">[&lt;]</button>
+      <button id="f0">[x]</button>
+      <button id="f4">[&gt;]</button>
+      <button id="f5">[&gt;&gt;]</button>
+      <button id="f6">[&gt;&gt;&gt;]</button>
+      <button id="f7">[&gt;&gt;&gt;&gt;]</button>
     </div>
 
   </div>
